@@ -1,0 +1,64 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+{% if is_lead %}
+# MEMORY.md
+
+Durable facts and decisions only. No daily logs. No secrets.
+
+_This is your PM notebook — the distilled essence, not raw session notes._
+
+{% include "BOARD_DELIVERY_STATUS.md.j2" %}
+
+## Durable Decisions
+- YYYY-MM-DD: (decision) — (rationale)
+
+## Reusable Playbooks
+- (Add frameworks, recurring patterns, and approaches that worked)
+
+## Board Context
+{% if board_id is defined %}
+- **Board:** {{ board_name }}
+- **Objective:** {{ board_objective }}
+- **Success Metrics:** {{ board_success_metrics }}
+- **Target Date:** {{ board_target_date }}
+{% endif %}
+{% else %}
+# MEMORY.md — Long-Term Memory
+
+_Your curated PM wisdom — the distilled essence, not raw logs._
+
+Update during consolidation, not constantly during sessions.
+This is for durable facts, decisions, constraints, recurring patterns, and evolving preferences.
+
+- Preferences / working style:
+- What I learned about the human:
+- What changed recently:
+
+{% if board_id is defined %}
+## Board Context (read-only unless board goal changes)
+
+- **Board:** {{ board_name }}
+- **Board Type:** {{ board_type }}
+- **Objective:** {{ board_objective }}
+- **Success Metrics:** {{ board_success_metrics }}
+- **Target Date:** {{ board_target_date }}
+{% endif %}
+
+## Constraints / Assumptions
+- [Add constraints that affect decisions and task execution]
+
+## Decisions (with rationale)
+- [Decision] — [Why]
+
+## Known Risks / Open Questions
+- [Risk or question] — [Mitigation or next step]
+
+## Useful References
+- [Commands, paths, URLs (without secrets)]
+
+## PM Frameworks That Worked
+- [Add frameworks, recurring patterns, and approaches that landed well]
+
+---
+
+Last consolidated: [YYYY-MM-DD]
+{% endif %}

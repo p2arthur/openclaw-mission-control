@@ -1,0 +1,99 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+# HEARTBEAT.md
+
+_Cadence and rhythms for your job search._
+
+{% if is_lead %}
+## Lead Heartbeat (Weekly)
+
+Every Monday or your preferred cadence:
+
+1. **Pipeline Review** (15 min)
+   - How many applications this past week? Conversion rate?
+   - Any interviews scheduled? Rejections? Offers?
+   - Application velocity on track to targets?
+
+2. **Blockers & Strategy Pivots** (10 min)
+   - Any major blockers (target list exhausted, interview feedback pattern, offer negotiation stuck)?
+   - Do we need to adjust targets, pacing, or strategy?
+
+3. **Status Update** (5 min)
+   - One clear message to the candidate: what's working, what needs attention, what's next
+
+4. **Handoff Check** (5 min)
+   - Are interview prep tasks on track?
+   - Do we have what we need for next week's applications?
+   - Any context missing?
+
+## Key Metrics
+- **Application velocity:** Targets per week (adjust based on quality vs quantity trade-off)
+- **Interview conversion:** % of applications that lead to first round
+- **Interview-to-offer conversion:** % of interviews that advance
+- **Time per phase:** Resume → applications → interviews → negotiation
+
+{% else %}
+## Worker Heartbeat (Twice Weekly)
+
+### Monday Check-In
+1. **Week Recap**
+   - How many applications sent?
+   - Any interview feedback from last week?
+   - What worked? What didn't?
+
+2. **Blockers**
+   - Stuck on anything? Resume revision? Interview anxiety? Target list?
+
+3. **This Week's Priorities**
+   - Which targets are we hitting?
+   - Interview prep if needed?
+
+### Thursday/Friday Check-In
+1. **Mid-week Status**
+   - Velocity check (on track with applications?)
+   - Any urgent feedback or strategy changes needed?
+
+2. **Weekend Plan**
+   - Prep for next week's interviews?
+   - Application polish or research time?
+
+## Phase Rhythm
+
+### Phase 1: Resume & LinkedIn (1-2 weeks)
+- **Weekly goal:** Resume optimized, LinkedIn profile updated, targeting list finalized
+- **Check:** ATS-ready, achievement-heavy bullets, tailored for target roles
+
+### Phase 2: Application Pipeline (2-8 weeks, ongoing)
+- **Weekly goal:** 5-10 high-quality applications (adjust based on role specificity)
+- **Check:** Application quality > quantity; personalized cover notes; referrals leveraged
+
+### Phase 3: Interview Prep (Concurrent with phase 2)
+- **Check-in:** After each interview, document feedback and adjust prep
+- **Weekly goal:** 1-2 practice interviews if actively interviewing
+- **Cadence:** STAR framework review, company research, technical/case practice as needed
+
+### Phase 4: Negotiation & Close (1-2 weeks)
+- **Check:** Offer package understood, market data researched, counter-offer strategy clear
+- **Weekly goal:** Move from offer to signed, or pivot to next opportunity
+
+## Escalation Cadence
+
+If you're stalled for 2 weeks:
+- Maybe the targets are wrong (too niche? too competitive?)
+- Maybe the resume isn't converting (quality signal?)
+- Maybe the interview pipeline is stuck (feedback loop broken?)
+
+**Escalate & pivot,** don't just grind harder.
+
+## Win Recognition
+
+When something good happens:
+- First interview? Celebrate it.
+- Offer received? Even if you're negotiating, acknowledge the win.
+- Got feedback that improved your approach? Document it.
+
+Job search is a slog. Small wins matter.
+
+---
+
+_This rhythm keeps you moving without burning out. Adjust as needed. 💼_
+{% endif %}

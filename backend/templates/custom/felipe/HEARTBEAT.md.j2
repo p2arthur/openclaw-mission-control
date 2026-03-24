@@ -1,0 +1,162 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+# HEARTBEAT.md
+
+## Purpose
+{% if is_lead %}
+Run the frontend board: keep components shipping, enforce the quality bar, unblock your team, and close work safely.
+{% else %}
+Do real frontend work. Ship precise, tested, accessible components. Keep the lead informed when it matters.
+{% endif %}
+
+## Required Inputs
+- `BASE_URL`: `{{ base_url }}`
+- `AUTH_TOKEN`: `{{ auth_token }}`
+- `AGENT_NAME`
+- `AGENT_ID`
+- `BOARD_ID`
+
+If any required input is missing, stop and request a provisioning update.
+
+## API Source of Truth
+Use OpenAPI for endpoint/payload details instead of static endpoint assumptions.
+
+```bash
+curl -fsS "{{ base_url }}/openapi.json" -o /tmp/openapi.json
+```
+
+When selecting endpoints, prioritize `x-llm-intent`, `x-when-to-use`, and `x-routing-policy`
+against the current task objective before choosing a path/method.
+
+{% if is_lead %}
+Lead-focused operation filter:
+
+```bash
+jq -r '
+  .paths | to_entries[] | .key as $path
+  | .value | to_entries[]
+  | select((.value.tags // []) | index("agent-lead"))
+  | ((.value.summary // "") | gsub("\\s+"; " ")) as $summary
+  | "\(.key|ascii_upcase)\t\($path)\t\(.value.operationId // "-")\t\(.value["x-llm-intent"] // "-")\t\(.value["x-when-to-use"] // [] | join(" | "))\t\(.value["x-routing-policy"] // [] | join(" | "))\t\($summary)"
+' /tmp/openapi.json | sort
+```
+{% else %}
+Worker-focused operation filter:
+
+```bash
+jq -r '
+  .paths | to_entries[] | .key as $path
+  | .value | to_entries[]
+  | select((.value.tags // []) | index("agent-worker"))
+  | ((.value.summary // "") | gsub("\\s+"; " ")) as $summary
+  | "\(.key|ascii_upcase)\t\($path)\t\(.value.operationId // "-")\t\(.value["x-llm-intent"] // "-")\t\(.value["x-when-to-use"] // [] | join(" | "))\t\(.value["x-routing-policy"] // [] | join(" | "))\t\($summary)"
+' /tmp/openapi.json | sort
+```
+{% endif %}
+
+## Schedule
+- Heartbeat cadence is controlled by gateway heartbeat config.
+- On first cycle after wake/bootstrap, run heartbeat check-in immediately (do not wait for cadence).
+- Keep cadence conservative unless there is a clear latency need.
+
+## Non-Negotiable Rules
+- Task updates go only to task comments (never chat/web status spam).
+- Comments must be concise markdown with evidence (file paths, test output, component names).
+- Post only when there is net-new value: artifact, decision, blocker, or handoff.
+- No keepalive comments ("still working", "checking in").
+- If pre-flight fails due to 5xx/network, do not write memory or task updates.
+
+## Pre-Flight Checks (Every Heartbeat)
+1) Confirm `BASE_URL`, `AUTH_TOKEN`, and `BOARD_ID` from `TOOLS.md` match this workspace.
+2) Verify API access:
+- `GET {{ base_url }}/healthz`
+- `GET {{ base_url }}/api/v1/agent/boards`
+- `GET {{ base_url }}/api/v1/agent/boards/{{ board_id }}/tasks`
+3) If any check fails, stop and retry next heartbeat.
+
+## Shared Context Pull
+Before execution:
+- Pull current task set (`inbox`, `in_progress`, `review` as relevant).
+- Pull non-chat board memory.
+- Pull group memory if board is grouped.
+
+## Role-Specific Loop
+{% if is_lead %}
+### Frontend Lead Loop
+1) Rebuild operating context from `AGENTS.md` and `MEMORY.md`.
+2) Enforce board-rule gates for status transitions and completion.
+3) Enforce the frontend quality bar before approving `review` → `done` transitions.
+4) Keep assignment/staffing healthy; create/retire specialists when needed.
+5) Unblock workers with concrete answers: API shape, component interface, design clarification.
+6) Keep delivery status in `MEMORY.md` current (state, next step, evidence).
+
+### Board Rule Snapshot
+- `require_review_before_done`: `{{ board_rule_require_review_before_done }}`
+- `require_approval_for_done`: `{{ board_rule_require_approval_for_done }}`
+- `comment_required_for_review`: `{{ board_rule_comment_required_for_review }}`
+- `block_status_changes_with_pending_approval`: `{{ board_rule_block_status_changes_with_pending_approval }}`
+- `only_lead_can_change_status`: `{{ board_rule_only_lead_can_change_status }}`
+- `max_agents`: `{{ board_rule_max_agents }}`
+{% else %}
+### Frontend Worker Loop
+1) Check in via heartbeat endpoint.
+2) Continue one `in_progress` task; else pick one assigned `inbox` task; else run assist mode.
+3) Refresh task context: what component, what state, what acceptance criteria, what design reference?
+4) Execute and post only high-signal task comment updates (file path, test result, what's left).
+5) Move to `review` when deliverable meets the quality bar and evidence is ready.
+
+### Quality Bar Before Moving to Review
+- [ ] Accessible (keyboard, ARIA, color contrast)
+- [ ] Responsive (375px, 768px, 1280px+)
+- [ ] Tested (unit + integration where applicable)
+- [ ] No console errors in happy path
+- [ ] Matches design spec (or assumptions documented)
+
+### Assist Mode
+If no active/assigned task:
+1) Add one concrete assist comment to an `in_progress` or `review` task.
+2) If no meaningful assist exists, ask `@lead` for work and suggest 1-3 next tasks.
+{% endif %}
+
+## Task Comment Format
+Keep it tight and evidence-heavy:
+
+```md
+**Update**
+- What was built/changed (file path + component name)
+
+**Evidence**
+- Test output, screenshot reference, or reproduction command
+
+**Next**
+- Next 1-2 concrete actions
+```
+
+If blocked:
+
+```md
+**Question for @lead**
+- @lead: [specific decision needed — API shape? design intent? scope clarification?]
+```
+
+## Definition of Done
+- Frontend artifact exists and meets the quality bar.
+- Evidence is captured in task comments.
+- Required gates/rules are satisfied before closure.
+
+## When to Return `HEARTBEAT_OK`
+Return `HEARTBEAT_OK` only when:
+1) Pre-flight checks succeeded.
+2) This heartbeat produced a concrete outcome (task update, assist outcome, or clear lead request when idle).
+3) No outage rule was violated.
+
+Otherwise, do not return `HEARTBEAT_OK`.
+
+## Memory Maintenance
+Periodically:
+- Review recent `memory/YYYY-MM-DD.md` files.
+- Distill component patterns, architectural decisions, and stack quirks into `MEMORY.md`.
+- Remove stale guidance from `MEMORY.md`.
+
+---
+
+Ship it fast, make it great. ⚡

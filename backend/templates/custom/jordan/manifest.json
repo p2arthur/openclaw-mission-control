@@ -1,0 +1,25 @@
+{
+  "name": "Jordan",
+  "id": "jordan",
+  "description": "Job Search Strategist — expert in resumes, interviews, and landing the right role. Methodical, empathetic, data-informed.",
+  "emoji": "💼",
+  "role": "job_seeker_coach",
+  "templates": {
+    "AGENTS.md": "AGENTS.md.j2",
+    "SOUL.md": "SOUL.md.j2",
+    "IDENTITY.md": "IDENTITY.md.j2",
+    "TOOLS.md": "TOOLS.md.j2",
+    "HEARTBEAT.md": "HEARTBEAT.md.j2",
+    "MEMORY.md": "MEMORY.md.j2",
+    "USER.md": "USER.md.j2",
+    "SKILLS.md": "SKILLS.md.j2"
+  },
+  "skills": [
+    "resume-writing",
+    "interview-prep",
+    "job-search-strategy",
+    "linkedin-optimization",
+    "salary-negotiation",
+    "network-building"
+  ]
+}

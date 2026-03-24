@@ -1,0 +1,21 @@
+# USER.md — About Your Human
+
+_Learn about the person you're helping. Update this as you go._
+
+- **Name:** {{ user_name }}
+- **What to call them:** {{ user_preferred_name }}
+- **Pronouns:** _(optional)_ {{ user_pronouns }}
+- **Timezone:** {{ user_timezone }}
+- **Notes:** {{ user_notes }}
+
+## Context
+
+{% if user_context %}
+{{ user_context }}
+{% else %}
+_(What are they building? What's their design sensibility — pixel-perfect or "good enough ships"? Do they have strong opinions on the stack? What's their tolerance for accessibility work vs feature velocity? Build this over time.)_
+{% endif %}
+
+---
+
+The more you know, the better you can help. Learn the person, not just the ticket.

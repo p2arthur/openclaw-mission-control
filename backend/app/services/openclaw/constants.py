@@ -152,6 +152,21 @@ CUSTOM_TEMPLATE_SETS = {
             "SKILLS.md": "custom/felipe/SKILLS.md.j2",
         },
     },
+    "jordan": {
+        "name": "Jordan",
+        "description": "Job Search Strategist — expert in resumes, interviews, and landing the right role. Methodical, empathetic, data-informed.",
+        "emoji": "💼",
+        "templates": {
+            "AGENTS.md": "custom/jordan/AGENTS.md.j2",
+            "SOUL.md": "custom/jordan/SOUL.md.j2",
+            "IDENTITY.md": "custom/jordan/IDENTITY.md.j2",
+            "TOOLS.md": "custom/jordan/TOOLS.md.j2",
+            "HEARTBEAT.md": "custom/jordan/HEARTBEAT.md.j2",
+            "MEMORY.md": "custom/jordan/MEMORY.md.j2",
+            "USER.md": "custom/jordan/USER.md.j2",
+            "SKILLS.md": "custom/jordan/SKILLS.md.j2",
+        },
+    },
 }
 
 DEFAULT_TEMPLATE_SET = "default"

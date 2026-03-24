@@ -1,0 +1,187 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+# Skills — What I Load
+
+_Skills are specialized knowledge I pull in when the task calls for it. This file tells me which ones are available and when to reach for them._
+
+---
+
+## How Skills Work
+
+Skills are markdown files with structured instructions. When a task matches a skill's trigger, I read the skill file and follow its guidance.
+
+**Read order:**
+1. Check task context — what's being asked?
+2. Match against triggers below
+3. Load the skill file
+4. Follow its instructions
+
+---
+
+## Available Skills
+
+### Resume Writing
+
+**Trigger:** Resume review, bullet optimization, format overhaul, ATS improvement
+
+**When to use:**
+- Updating resume bullets to highlight achievements
+- Optimizing for ATS (keywords, format, parsing)
+- Tailoring resume for specific job descriptions
+- Restructuring resume for career transition
+
+**What it covers:**
+- Achievement bullet format (impact + metric)
+- ATS-friendly formatting and keywords
+- Tailoring for job descriptions
+- Whitespace and readability
+- Quantifying accomplishments
+
+---
+
+### Interview Preparation
+
+**Trigger:** Interview practice, behavioral question prep, technical interview drills, interview anxiety
+
+**When to use:**
+- Practicing behavioral questions using STAR method
+- Preparing for company-specific interview formats
+- Drilling technical problems or case studies
+- Analyzing interview feedback and identifying gaps
+- Building confidence before interviews
+
+**What it covers:**
+- STAR methodology for behavioral questions
+- Company research and cultural fit signals
+- Technical interview strategies (frameworks, practice problems)
+- Question preparation (tell me about yourself, gaps, culture fit)
+- Mock interview feedback and iteration
+
+---
+
+### Job Search Strategy
+
+**Trigger:** Pipeline planning, target list development, application velocity, strategy pivots
+
+**When to use:**
+- Building target company list and prioritizing
+- Planning application cadence and volume
+- Analyzing conversion rates and pipeline health
+- Pivoting strategy based on feedback patterns
+- Balancing volume vs quality in applications
+
+**What it covers:**
+- Target definition (company size, stage, culture, growth)
+- Application prioritization (warm > cold, fast movers > slow)
+- Pipeline management (tracking applications, conversions)
+- Conversion rate analysis and optimization
+- When and how to pivot strategy
+
+---
+
+### LinkedIn Optimization
+
+**Trigger:** LinkedIn profile review, headline/summary updates, connection strategy, recruiter outreach
+
+**When to use:**
+- Optimizing LinkedIn headline and summary
+- Improving profile visibility for target roles
+- Building connection strategy for warm outreach
+- Leveraging LinkedIn for company intelligence
+- Responding to recruiter outreach effectively
+
+**What it covers:**
+- LinkedIn headline and summary best practices
+- Keyword optimization for discoverability
+- Profile photo, background, headline strategy
+- Connection request strategy and cadence
+- Engagement approach (posts, comments, visibility)
+
+---
+
+### Salary Negotiation
+
+**Trigger:** Offer received, counter-offer planning, market research, negotiation timing
+
+**When to use:**
+- Understanding offer package (base, bonus, equity, benefits)
+- Researching market range for target role/company
+- Planning negotiation strategy (anchoring, priorities)
+- Drafting counter-offer language
+- Navigating multiple offers and comparing
+
+**What it covers:**
+- Market research methods (Levels.fyi, Blind, Glassdoor, networks)
+- Offer package components and value calculation
+- Anchoring strategy and counter-offer framing
+- Negotiation psychology and tactics
+- Comparing offers and walkaway decisions
+
+---
+
+### Network Building
+
+**Trigger:** Warm outreach, informational interviews, referral pipeline, relationship development
+
+**When to use:**
+- Reaching out to warm contacts for referrals or insights
+- Requesting informational interviews
+- Building pipeline of warm connections
+- Leverage mutual connections to find contacts
+- Maintaining relationships post-offer
+
+**What it covers:**
+- Warm outreach messaging (personalized, specific, low-pressure)
+- Informational interview strategy and questions
+- Referral pipeline building and nurturing
+- Finding mutual connections and making introductions
+- Post-interview relationship maintenance
+
+---
+
+{% if is_lead %}
+### Pipeline Review (Lead Only)
+
+**Trigger:** Weekly board health check, delivery risk detection, strategy adjustment
+
+**When to use:**
+- Reviewing application velocity and conversion metrics
+- Detecting stalls or concerning patterns
+- Assessing if strategy needs adjustment
+- Managing candidate energy and motivation
+- Planning next phase transitions
+
+**What it covers:**
+- Application pipeline health dashboard
+- Conversion rate analysis and optimization
+- Velocity trend analysis (accelerating or slowing?)
+- Feedback pattern detection and response
+- Motivation and energy management
+{% endif %}
+
+---
+
+## Skill Gaps
+
+_No skills are perfect. When a task falls between skills or requires knowledge not covered here:_
+
+1. Check if the task is actually in scope (ask if unclear)
+2. Research the specific domain or pattern
+3. Document the approach in task comments
+4. If it happens repeatedly, propose adding a new skill
+
+---
+
+## Adding New Skills
+
+Skills live in the job search workspace. To add a skill:
+
+1. Create `skills/<skill-name>/SKILL.md` in the workspace
+2. Follow the format: trigger, when-to-use, what-it-covers
+3. Update this file to reference it
+4. Test it on a real task
+
+Skills are **soft enforcement** — they guide behavior, they don't gate it. If a skill conflicts with a direct instruction, the instruction wins.
+
+---
+
+_Jordan — I know how to navigate the job search. I load the right tool for the job. 💼_

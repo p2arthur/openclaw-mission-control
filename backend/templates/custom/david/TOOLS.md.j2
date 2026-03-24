@@ -1,0 +1,87 @@
+{% set is_main = (is_main_agent | default(false) | string | lower) in ["true", "1", "yes"] %}
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+# TOOLS.md
+
+- `BASE_URL={{ base_url }}`
+- `AUTH_TOKEN={{ auth_token }}`
+- `AGENT_NAME={{ agent_name }}`
+- `AGENT_ID={{ agent_id }}`
+{% if board_id is defined %}
+- `BOARD_ID={{ board_id }}`
+{% endif %}
+- `WORKSPACE_ROOT={{ workspace_root }}`
+{% if workspace_path is defined %}
+- `WORKSPACE_PATH={{ workspace_path }}`
+{% endif %}
+- Required tools: `curl`, `jq`
+
+{% if is_main %}
+{% set role_tag = "agent-main" %}
+{% elif is_lead %}
+{% set role_tag = "agent-lead" %}
+{% else %}
+{% set role_tag = "agent-worker" %}
+{% endif %}
+
+## OpenAPI Refresh (run before API-heavy work)
+
+```bash
+mkdir -p api
+curl -fsS "{{ base_url }}/openapi.json" -o api/openapi.json
+jq -r '
+  .paths | to_entries[] as $p
+  | $p.value | to_entries[]
+  | select((.value.tags // []) | index("{{ role_tag }}"))
+  | "\(.key|ascii_upcase)\t\($p.key)\t\(.value.operationId // "-")\t\(.value["x-llm-intent"] // "-")\t\(.value["x-when-to-use"] // [] | join(" | "))\t\(.value["x-routing-policy"] // [] | join(" | "))"
+' api/openapi.json | sort > api/{{ role_tag }}-operations.tsv
+```
+
+## API Source of Truth
+- `api/openapi.json`
+- `api/{{ role_tag }}-operations.tsv`
+  - Columns: METHOD, PATH, OP_ID, X_LLM_INTENT, X_WHEN_TO_USE, X_ROUTING_POLICY
+
+## API Discovery Policy
+- Use operations tagged `{{ role_tag }}`.
+- Prefer operations whose `x-llm-intent` and `x-when-to-use` match the current objective.
+- Derive method/path/schema from `api/openapi.json` at runtime.
+- Do not hardcode endpoint paths in markdown files.
+
+## API Safety
+If no confident match exists for current intent, ask one clarifying question before proceeding.
+
+## Available Specialist Agents
+
+You can spawn specialist agents when tasks need dedicated expertise. Use the `POST /agents` endpoint with the appropriate `template_set` value.
+
+{% if available_agent_templates %}
+{{ available_agent_templates }}
+{% else %}
+_No specialist templates available — use default agent spawning._
+{% endif %}
+
+**Spawning pattern:** When a task needs a specialist, create an agent with `template_set` matching the specialist, a clear name, and `identity_profile.role` set appropriately. Assign the task to the spawned agent.
+
+## Local Notes
+_This section is yours. Add the team-specific context that makes you useful._
+
+Things like:
+- Stakeholder contact preferences
+- Team meeting patterns and cadence
+- Recurring ceremony notes (standups, reviews, retros)
+- Project-specific conventions
+- Preferred communication channels per person
+
+```markdown
+### Team
+- (e.g.) Standup: Daily 9am PST, async updates OK
+- (e.g.) Product reviews: Thursdays 2pm, needs 24h notice
+
+### Stakeholders
+- (e.g.) Engineering lead: Prefers Loom over docs
+- (e.g.) Exec sponsor: Wants 1-page summaries, no decks
+```
+
+---
+
+Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup and team. Keep them separate so you can update skills without losing team nuance.

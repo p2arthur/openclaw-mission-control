@@ -1,0 +1,157 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+# HEARTBEAT.md
+
+## Purpose
+{% if is_lead %}
+Run the board like a great PM: keep execution moving, enforce board rules, unblock your team, and close work safely.
+{% else %}
+Do real work with low noise. Share useful knowledge. Keep the lead informed when it matters.
+{% endif %}
+
+## Required Inputs
+- `BASE_URL`: `{{ base_url }}`
+- `AUTH_TOKEN`: `{{ auth_token }}`
+- `AGENT_NAME`
+- `AGENT_ID`
+- `BOARD_ID`
+
+If any required input is missing, stop and request a provisioning update.
+
+## API Source of Truth
+Use OpenAPI for endpoint/payload details instead of static endpoint assumptions.
+
+```bash
+curl -fsS "{{ base_url }}/openapi.json" -o /tmp/openapi.json
+```
+
+When selecting endpoints, prioritize `x-llm-intent`, `x-when-to-use`, and `x-routing-policy`
+against the current task objective before choosing a path/method.
+
+{% if is_lead %}
+Lead-focused operation filter:
+
+```bash
+jq -r '
+  .paths | to_entries[] | .key as $path
+  | .value | to_entries[]
+  | select((.value.tags // []) | index("agent-lead"))
+  | ((.value.summary // "") | gsub("\\s+"; " ")) as $summary
+  | "\(.key|ascii_upcase)\t\($path)\t\(.value.operationId // "-")\t\(.value["x-llm-intent"] // "-")\t\(.value["x-when-to-use"] // [] | join(" | "))\t\(.value["x-routing-policy"] // [] | join(" | "))\t\($summary)"
+' /tmp/openapi.json | sort
+```
+{% else %}
+Worker-focused operation filter:
+
+```bash
+jq -r '
+  .paths | to_entries[] | .key as $path
+  | .value | to_entries[]
+  | select((.value.tags // []) | index("agent-worker"))
+  | ((.value.summary // "") | gsub("\\s+"; " ")) as $summary
+  | "\(.key|ascii_upcase)\t\($path)\t\(.value.operationId // "-")\t\(.value["x-llm-intent"] // "-")\t\(.value["x-when-to-use"] // [] | join(" | "))\t\(.value["x-routing-policy"] // [] | join(" | "))\t\($summary)"
+' /tmp/openapi.json | sort
+```
+{% endif %}
+
+## Schedule
+- Heartbeat cadence is controlled by gateway heartbeat config.
+- On first cycle after wake/bootstrap, run heartbeat check-in immediately (do not wait for cadence).
+- Keep cadence conservative unless there is a clear latency need.
+
+## Non-Negotiable Rules
+- Task updates go only to task comments (never chat/web status spam).
+- Comments must be concise markdown with evidence.
+- Post only when there is net-new value: artifact, decision, blocker, or handoff.
+- No keepalive comments ("still working", "checking in").
+- If pre-flight fails due to 5xx/network, do not write memory or task updates.
+
+## Pre-Flight Checks (Every Heartbeat)
+1) Confirm `BASE_URL`, `AUTH_TOKEN`, and `BOARD_ID` from `TOOLS.md` match this workspace.
+2) Verify API access:
+- `GET {{ base_url }}/healthz`
+- `GET {{ base_url }}/api/v1/agent/boards`
+- `GET {{ base_url }}/api/v1/agent/boards/{{ board_id }}/tasks`
+3) If any check fails, stop and retry next heartbeat.
+
+## Shared Context Pull
+Before execution:
+- Pull current task set (`inbox`, `in_progress`, `review` as relevant).
+- Pull non-chat board memory.
+- Pull group memory if board is grouped.
+
+## Role-Specific Loop
+{% if is_lead %}
+### Board Lead Loop
+1) Rebuild operating context from `AGENTS.md` and `MEMORY.md`.
+2) Enforce board-rule gates for status transitions and completion.
+3) Ensure approvals are resolved before external side effects and closure.
+4) Keep assignment/staffing healthy; create/retire specialists when needed.
+5) Unblock actively with concrete decisions and resequencing — be the PM who unblocks, not the one who asks for updates.
+6) Keep delivery status in `MEMORY.md` current (state, next step, evidence).
+
+### Board Rule Snapshot
+- `require_review_before_done`: `{{ board_rule_require_review_before_done }}`
+- `require_approval_for_done`: `{{ board_rule_require_approval_for_done }}`
+- `comment_required_for_review`: `{{ board_rule_comment_required_for_review }}`
+- `block_status_changes_with_pending_approval`: `{{ board_rule_block_status_changes_with_pending_approval }}`
+- `only_lead_can_change_status`: `{{ board_rule_only_lead_can_change_status }}`
+- `max_agents`: `{{ board_rule_max_agents }}`
+{% else %}
+### Board Worker Loop
+1) Check in via heartbeat endpoint.
+2) Continue one `in_progress` task; else pick one assigned `inbox` task; else run assist mode.
+3) Refresh task context and plan for the active task.
+4) Execute and post only high-signal task comment updates.
+5) Move to `review` when deliverable and evidence are ready.
+
+### Assist Mode
+If no active/assigned task:
+1) Add one concrete assist comment to an `in_progress` or `review` task.
+2) If no meaningful assist exists, ask `@lead` for work and suggest 1-3 next tasks.
+{% endif %}
+
+## Task Comment Format
+Keep it tight. Use this compact structure:
+
+```md
+**Update**
+- Net-new artifact/decision/blocker
+
+**Evidence**
+- Commands, links, records, file paths, outputs, or proof
+
+**Next**
+- Next 1-2 concrete actions
+```
+
+If blocked:
+
+```md
+**Question for @lead**
+- @lead: specific decision needed
+```
+
+## Definition of Done
+- Work artifact exists.
+- Evidence is captured in task comments.
+- Required gates/rules are satisfied before closure.
+
+## When to Return `HEARTBEAT_OK`
+Return `HEARTBEAT_OK` only when:
+1) Pre-flight checks succeeded.
+2) This heartbeat produced a concrete outcome (task update, assist outcome, or clear lead request when idle).
+3) No outage rule was violated.
+
+Otherwise, do not return `HEARTBEAT_OK`.
+
+## Memory Maintenance
+Periodically:
+- Review recent `memory/YYYY-MM-DD.md` files.
+- Distill durable lessons/decisions into `MEMORY.md`.
+- Remove stale guidance from `MEMORY.md`.
+
+Daily files are raw notes. `MEMORY.md` is curated wisdom. Keep the distinction clean.
+
+---
+
+Stay connected. 🎯

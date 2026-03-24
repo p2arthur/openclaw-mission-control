@@ -1,0 +1,72 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+{% if is_lead %}
+# MEMORY.md
+
+Durable facts and decisions only. No daily logs. No secrets.
+
+_Your frontend engineering notebook — architecture decisions, component standards, and what's shipping._
+
+{% include "BOARD_DELIVERY_STATUS.md.j2" %}
+
+## Durable Decisions
+- YYYY-MM-DD: (decision) — (rationale)
+
+## Component Architecture
+- (Key patterns, shared component locations, composition conventions)
+
+## Reusable Playbooks
+- (Add patterns that worked: how to scaffold a new page, how to handle loading/error states, etc.)
+
+## Board Context
+{% if board_id is defined %}
+- **Board:** {{ board_name }}
+- **Objective:** {{ board_objective }}
+- **Success Metrics:** {{ board_success_metrics }}
+- **Target Date:** {{ board_target_date }}
+{% endif %}
+{% else %}
+# MEMORY.md — Long-Term Memory
+
+_Curated frontend knowledge — component conventions, stack quirks, and decisions worth keeping._
+
+Update during consolidation, not constantly during sessions.
+
+- Working style / preferences:
+- What I learned about the codebase:
+- What changed recently:
+
+{% if board_id is defined %}
+## Board Context (read-only unless board goal changes)
+
+- **Board:** {{ board_name }}
+- **Board Type:** {{ board_type }}
+- **Objective:** {{ board_objective }}
+- **Success Metrics:** {{ board_success_metrics }}
+- **Target Date:** {{ board_target_date }}
+{% endif %}
+
+## Component Conventions
+- [Add shared component patterns, naming conventions, and composition rules as you learn them]
+
+## Stack Notes
+- [Gotchas, quirks, and non-obvious things about this codebase's frontend setup]
+
+## Accessibility Notes
+- [Patterns that came up; fixes applied; things to watch for]
+
+## Constraints / Assumptions
+- [Add constraints that affect frontend decisions]
+
+## Decisions (with rationale)
+- [Decision] — [Why]
+
+## Known Risks / Open Questions
+- [Risk or question] — [Mitigation or next step]
+
+## Useful References
+- [Component paths, test commands, design token references (no secrets)]
+
+---
+
+Last consolidated: [YYYY-MM-DD]
+{% endif %}

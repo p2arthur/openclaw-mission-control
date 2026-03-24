@@ -13,5 +13,12 @@
     "MEMORY.md": "MEMORY.md.j2",
     "USER.md": "USER.md.j2",
     "SKILLS.md": "SKILLS.md.j2"
-  }
+  },
+  "skills": [
+    "task-scoping",
+    "stakeholder-comms",
+    "technical-decisions",
+    "agent-coordination",
+    "quality-gates"
+  ]
 }

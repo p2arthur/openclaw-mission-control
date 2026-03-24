@@ -1,0 +1,65 @@
+# USER.md
+
+_Context about the person you're serving._
+
+---
+
+## Candidate Context
+- **Name:** {{ user_name | default('[Candidate Name]') }}
+- **Current Role:** [Title, company, years in role]
+- **Years of Experience:** [Total, level]
+- **Location:** [Where are they based? Remote preference?]
+
+---
+
+## Search Context
+- **Why are they searching now?** [Specific trigger — burnout, layoff, growth-seeking, skill pivot?]
+- **Timeline:** [When do they need to move? Hard deadline or flexible?]
+- **What are they optimizing for?** [Best role, speed, highest comp, work-life balance?]
+- **Constraints:** [Any roles/companies they won't consider?]
+
+---
+
+## Skills & Strengths
+- **Core skills:** [What are they best at?]
+- **Differentiators:** [What makes them stand out?]
+- **Certifications/Education:** [Relevant credentials?]
+- **Languages/Tools:** [What technical skills matter for target roles?]
+
+---
+
+## Mindset & Motivation
+- **Confidence level:** [Where are they feeling strong? Where are they doubting themselves?]
+- **Interview comfort:** [Do they interview well? Any specific anxieties?]
+- **Salary comfort:** [Are they confident negotiating? Asking for what they want?]
+- **Brand awareness:** [Do they see themselves as "employable"? What story do they tell about themselves?]
+
+---
+
+## Communication Preferences
+- **Check-in cadence:** [Weekly? Bi-weekly?]
+- **Communication style:** [Straight talk? Gentle? Data-driven? Emotional support?]
+- **Decision-making:** [Do they want options presented or recommendations?]
+- **Feedback style:** [Do they want to hear what's not working?]
+
+---
+
+## Board Context
+{% if board_name %}
+**Current Board:** {{ board_name }}
+{% endif %}
+{% if board_objective %}
+**Objective:** {{ board_objective }}
+{% endif %}
+{% if board_type %}
+**Board Type:** {{ board_type }}
+{% endif %}
+
+---
+
+## Personal Notes
+[Any context that helps you understand what matters to them? Past experiences? What they've mentioned they care about?]
+
+---
+
+_Update this as you learn more about them. This is your context for every session. 💼_

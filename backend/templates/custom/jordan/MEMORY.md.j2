@@ -1,0 +1,95 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+# MEMORY.md
+
+_Your curated job search memory. Not raw logs — the distilled essence of what matters._
+
+---
+
+## Who You're Serving
+{% if is_lead %}
+- **Candidate Name:** [Will be filled in by USER.md]
+- **Title & Level:** [Current/Past]
+- **Timeline:** [When do they need to move? Hard deadline or flexible?]
+- **Optimization:** [Best fit? Speed? Compensation?]
+{% else %}
+- **Name:** [Candidate name]
+- **Background:** [Current role, years of experience, key skills]
+- **Motivation:** [Why are they searching? What do they want to avoid?]
+{% endif %}
+
+---
+
+## Target Definition
+- **Target Roles:** [List of 3-5 roles you're pursuing]
+- **Target Companies:** [15-20 companies with reasons why]
+- **Deal-Breakers:** [What's a red flag? Poor culture? No growth? Remote inflexible?]
+- **Nice-to-Haves:** [Stock options, specific tech stack, team size?]
+- **Compensation Range:** [Base + bonus expectations for target role]
+
+---
+
+## Application Pipeline Status
+{% if is_lead %}
+- **Submitted:** [Count this week, last week]
+- **In Progress:** [Count: screening, first round, second round, final round]
+- **Offers:** [Count and status]
+- **Rejections:** [Count and any patterns]
+- **Velocity Target:** [X applications per week for Y more weeks]
+{% else %}
+- **This Week:** [Company, role, status]
+- **Last Week:** [Company, role, result]
+- **Next Week Targets:** [Companies we're targeting]
+{% endif %}
+
+---
+
+## Interview Feedback Patterns
+- **What's working:** [Strengths that come up repeatedly in feedback]
+- **What needs work:** [Weaknesses or gaps mentioned by interviewers]
+- **STAR examples:** [Best stories to tell, updated based on feedback]
+- **Technical gaps:** [Areas where you stumble? Areas to drill?]
+- **Culture fit signals:** [What interviewers respond well to?]
+
+---
+
+## Resume & LinkedIn Notes
+- **Recent iterations:** [What changed? Did it help?]
+- **Strongest bullets:** [Achievements that get the most traction]
+- **ATS optimization:** [Keywords that matter for target roles]
+- **LinkedIn conversion:** [Who reached out? From what kind of profiles?]
+
+---
+
+## Strategy & Lessons
+- **What pivots did we make?** [And why]
+- **What worked surprisingly well?** [Double down]
+- **What didn't work?** [Don't repeat]
+- **Referral sources:** [Which networks produced conversations?]
+- **Timing patterns:** [When do companies move fastest?]
+
+---
+
+## Negotiations & Offers (if active)
+- **Pending offers:** [Company, offer details, deadline]
+- **Market research:** [Glassdoor, Levels.fyi, Blind, personal networks — what's the range?]
+- **Negotiation anchors:** [Your target, company's offer, walk-away point]
+- **Priorities:** [What matters most — base, equity, title, flexibility?]
+
+---
+
+## Key Contacts & Referrals
+- **Warm contacts:** [People who said they'd refer you — follow up status]
+- **Informational interviews:** [People to reach out to, when, what to ask]
+- **Mentors/sponsors:** [People in target companies who can provide intel]
+
+---
+
+## Personal Context
+- **Energy level:** [Job search is draining — how are they holding up?]
+- **Life constraints:** [Family, health, finances — what's the real timeline?]
+- **Confidence factors:** [What self-doubt comes up? How to address it?]
+- **Success signals:** [What would feel like a "win"?]
+
+---
+
+_Update this as you learn. Raw daily notes go in memory/YYYY-MM-DD.md. This is the curated essence. 💼_
