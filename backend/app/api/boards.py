@@ -98,7 +98,9 @@ def _board_update_message(
             f" -> {_format_board_field_value(current)}"
         )
     lines.append("")
-    lines.append("Take action: review the board changes and adjust plan/assignments as needed.")
+    lines.append(
+        "Take action: review the board changes and adjust plan/assignments as needed."
+    )
     return "\n".join(lines)
 
 
@@ -206,7 +208,9 @@ async def _apply_board_update(
             organization_id=board.organization_id,
         )
     crud.apply_updates(board, updates)
-    if updates.get("board_type") == "goal" and (not board.objective or not board.success_metrics):
+    if updates.get("board_type") == "goal" and (
+        not board.objective or not board.success_metrics
+    ):
         # Validate only when explicitly switching to goal boards.
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -488,6 +492,86 @@ async def create_board(
     data = payload.model_dump()
     data["organization_id"] = ctx.organization.id
     return await crud.create(session, Board, **data)
+
+
+@router.get("/templates", response_model=list[dict])
+async def list_template_sets(
+    session: AsyncSession = SESSION_DEP,
+    org: OrganizationContext = ORG_MEMBER_DEP,
+) -> list[dict]:
+    """List available agent template sets for board creation."""
+    from app.services.openclaw.constants import list_available_template_sets
+
+    return list_available_template_sets()
+
+
+@router.get("/templates/{template_id}", response_model=dict)
+async def get_template_set(
+    template_id: str,
+    session: AsyncSession = SESSION_DEP,
+    org: OrganizationContext = ORG_MEMBER_DEP,
+) -> dict:
+    """Get details for a specific agent template set."""
+    from app.services.openclaw.constants import (
+        get_template_set_manifest,
+        CUSTOM_TEMPLATE_SETS,
+        DEFAULT_TEMPLATE_SET,
+    )
+
+    if template_id == DEFAULT_TEMPLATE_SET:
+        return {
+            "id": DEFAULT_TEMPLATE_SET,
+            "name": "Default",
+            "description": "Standard Mission Control agent",
+            "emoji": "⚙️",
+            "templates": {
+                "AGENTS.md": "AGENTS.md.j2",
+                "SOUL.md": "SOUL.md.j2",
+                "IDENTITY.md": "IDENTITY.md.j2",
+                "TOOLS.md": "TOOLS.md.j2",
+                "HEARTBEAT.md": "HEARTBEAT.md.j2",
+                "MEMORY.md": "MEMORY.md.j2",
+                "USER.md": "USER.md.j2",
+            },
+            "skills": [],
+            "available_specialists": [
+                {
+                    "id": tid,
+                    "name": cfg["name"],
+                    "description": cfg["description"],
+                    "emoji": cfg.get("emoji", "🤖"),
+                }
+                for tid, cfg in CUSTOM_TEMPLATE_SETS.items()
+            ],
+        }
+
+    manifest = get_template_set_manifest(template_id)
+    if manifest is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    # Build available specialists (all other templates)
+    available_specialists = [
+        {
+            "id": tid,
+            "name": cfg["name"],
+            "description": cfg["description"],
+            "emoji": cfg.get("emoji", "🤖"),
+        }
+        for tid, cfg in CUSTOM_TEMPLATE_SETS.items()
+        if tid != template_id
+    ]
+
+    return {
+        "id": template_id,
+        "name": manifest["name"],
+        "description": manifest["description"],
+        "emoji": manifest["emoji"],
+        "templates": manifest.get("templates", {}),
+        "skills": manifest.get("skills", []),
+        "available_specialists": available_specialists,
+    }
 
 
 @router.get("/{board_id}", response_model=BoardRead)

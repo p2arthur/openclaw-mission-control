@@ -48,6 +48,7 @@ class Agent(QueryModel, table=True):
     last_wake_sent_at: datetime | None = Field(default=None)
     checkin_deadline_at: datetime | None = Field(default=None)
     last_provision_error: str | None = Field(default=None, sa_column=Column(Text))
+    template_set: str | None = Field(default=None, index=True)
     is_board_lead: bool = Field(default=False, index=True)
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)

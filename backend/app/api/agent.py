@@ -1262,6 +1262,50 @@ async def update_onboarding(
     )
 
 
+@router.get(
+    "/templates",
+    response_model=list[dict],
+    tags=AGENT_LEAD_TAGS,
+    summary="List available agent template sets",
+    description=(
+        "Return all template sets available for spawning specialist agents.\n\n"
+        "Each entry contains `id`, `name`, `description`, and `emoji`. "
+        "Pass `id` as `template_set` when calling the create-agent endpoint."
+    ),
+    operation_id="agent_lead_list_templates",
+    responses={
+        200: {"description": "Template list returned"},
+        403: {"model": LLMErrorResponse, "description": "Caller is not board lead"},
+    },
+    openapi_extra={
+        "x-llm-intent": "discover_specialists",
+        "x-when-to-use": [
+            "Before spawning a specialist to know what template IDs are valid",
+            "During planning to enumerate available roles for the board roster",
+        ],
+        "x-when-not-to-use": [
+            "After already reading the board snapshot's agent_roster — prefer roster over full list",
+        ],
+        "x-required-actor": "board_lead",
+        "x-side-effects": [],
+        "x-routing-policy-examples": [
+            {
+                "input": {"intent": "lead needs to know which specialist types exist"},
+                "decision": "agent_lead_list_templates",
+            },
+        ],
+    },
+)
+async def list_templates(
+    agent_ctx: AgentAuthContext = AGENT_CTX_DEP,
+) -> list[dict]:
+    """Return all available template sets a lead can use to spawn specialists."""
+    _require_board_lead(agent_ctx)
+    from app.services.openclaw.constants import list_available_template_sets
+
+    return list_available_template_sets()
+
+
 @router.post(
     "/agents",
     response_model=AgentRead,

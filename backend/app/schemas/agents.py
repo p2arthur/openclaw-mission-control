@@ -101,6 +101,15 @@ class AgentBase(SQLModel):
         description="Template representing deeper agent instructions.",
         examples=["When critical blockers appear, escalate in plain language."],
     )
+    template_set: str | None = Field(
+        default=None,
+        description=(
+            "Named template set that defines this agent's personality, skills, and markdown files. "
+            "Overrides the board-level template set. The agent's name is auto-populated from the "
+            "template manifest when not explicitly provided."
+        ),
+        examples=["felipe", "david"],
+    )
 
     @field_validator("identity_template", "soul_template", mode="before")
     @classmethod
@@ -124,7 +133,20 @@ class AgentBase(SQLModel):
 
 
 class AgentCreate(AgentBase):
-    """Payload for creating a new agent."""
+    """Payload for creating a new agent.
+
+    When ``template_set`` is provided and ``name`` is omitted, the agent's
+    name is automatically taken from the template manifest.
+    """
+
+    name: NonEmptyStr | None = Field(  # type: ignore[assignment]
+        default=None,
+        description=(
+            "Human-readable agent display name. Omit to auto-populate from the template manifest "
+            "when template_set is provided."
+        ),
+        examples=["Ops triage lead"],
+    )
 
 
 class AgentUpdate(SQLModel):

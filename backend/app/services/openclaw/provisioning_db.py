@@ -187,6 +187,13 @@ class OpenClawProvisioningService(OpenClawDBService):
                 await self.session.refresh(existing)
             return existing, False
 
+        # Resolve template set from board — custom templates define agent identity
+        board_template_set = getattr(board, "template_set", None) or "default"
+        template_manifest: dict[str, Any] | None = None
+        if board_template_set and board_template_set != "default":
+            from app.services.openclaw.constants import get_template_set_manifest
+            template_manifest = get_template_set_manifest(board_template_set)
+
         merged_identity_profile: dict[str, Any] = {
             "role": "Board Lead",
             "communication_style": "direct, concise, practical",
@@ -201,11 +208,21 @@ class OpenClawProvisioningService(OpenClawDBService):
                 },
             )
 
+        # Derive agent name: template manifest name > explicit override > default
+        # Template wins because the persona (David, etc.) defines the identity —
+        # onboarding may produce a generic name that would silently override it.
+        resolved_agent_name = (
+            (template_manifest["name"] if template_manifest else None)
+            or config_options.agent_name
+            or self.lead_agent_name(board)
+        )
+
         agent = Agent(
-            name=config_options.agent_name or self.lead_agent_name(board),
+            name=resolved_agent_name,
             board_id=board.id,
             gateway_id=request.gateway.id,
             is_board_lead=True,
+            template_set=board_template_set if board_template_set != "default" else None,
             heartbeat_config=DEFAULT_HEARTBEAT_CONFIG.copy(),
             identity_profile=merged_identity_profile,
             openclaw_session_id=self.lead_session_key(board),
@@ -1563,7 +1580,20 @@ class AgentLifecycleService(OpenClawDBService):
         gateway, _client_config = await self.require_gateway(board)
         data = payload.model_dump()
         data["gateway_id"] = gateway.id
+
+        # Auto-populate name from template manifest when not explicitly provided.
+        if not (data.get("name") or "").strip() and data.get("template_set"):
+            from app.services.openclaw.constants import get_template_set_manifest
+            manifest = get_template_set_manifest(data["template_set"])
+            if manifest and manifest.get("name"):
+                data["name"] = manifest["name"]
+
         requested_name = (data.get("name") or "").strip()
+        if not requested_name:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Agent name is required. Provide a name or a template_set with a manifest name.",
+            )
         await self.ensure_unique_agent_name(
             board=board,
             gateway=gateway,

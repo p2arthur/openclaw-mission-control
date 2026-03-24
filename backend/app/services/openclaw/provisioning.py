@@ -92,7 +92,8 @@ def _is_missing_agent_error(exc: OpenClawGatewayError) -> bool:
     if not message:
         return False
     if any(
-        marker in message for marker in ("unknown agent", "no such agent", "agent does not exist")
+        marker in message
+        for marker in ("unknown agent", "no such agent", "agent does not exist")
     ):
         return True
     return "agent" in message and "not found" in message
@@ -132,7 +133,9 @@ def _tools_exec_host_patch(config_data: dict[str, Any]) -> dict[str, Any] | None
     return {"exec": {"host": "gateway"}}
 
 
-def _channel_heartbeat_visibility_patch(config_data: dict[str, Any]) -> dict[str, Any] | None:
+def _channel_heartbeat_visibility_patch(
+    config_data: dict[str, Any],
+) -> dict[str, Any] | None:
     """Build a minimal patch ensuring channel default heartbeat visibility is configured.
 
     Gateways may have existing channel config; we only want to fill missing keys rather than
@@ -308,7 +311,9 @@ def _select_role_soul_ref(
     if exact_slug is not None:
         return exact_slug
 
-    prefix_matches = [ref for ref in refs if ref.slug.lower().startswith(f"{role_slug}-")]
+    prefix_matches = [
+        ref for ref in refs if ref.slug.lower().startswith(f"{role_slug}-")
+    ]
     if prefix_matches:
         return sorted(prefix_matches, key=lambda ref: len(ref.slug))[0]
 
@@ -356,6 +361,28 @@ async def _resolve_role_soul_markdown(role: str) -> tuple[str, str]:
         return "", ""
 
 
+def _available_specialist_templates(exclude: str = "default") -> str:
+    """Return a markdown-formatted string listing available specialist agent templates.
+
+    Used in Jinja2 context so lead agents like David know what specialists they can spawn.
+    Excludes the current template set (e.g. David shouldn't list himself).
+    """
+    from app.services.openclaw.constants import CUSTOM_TEMPLATE_SETS
+
+    lines = []
+    for template_id, config in CUSTOM_TEMPLATE_SETS.items():
+        if template_id == exclude:
+            continue
+        emoji = config.get("emoji", "🤖")
+        name = config["name"]
+        desc = config["description"]
+        lines.append(f'- **{name}** (`template_set: "{template_id}"`) {emoji} — {desc}')
+
+    if not lines:
+        return ""
+    return "\n".join(lines)
+
+
 def _build_context(
     agent: Agent,
     board: Board,
@@ -374,6 +401,14 @@ def _build_context(
     main_session_key = GatewayAgentIdentity.session_key(gateway)
     identity_context = _identity_context(agent)
     user_context = _user_context(user)
+
+    # Build available specialist templates list for lead agents.
+    # This lets David (or any lead) know what specialist agents can be spawned.
+    current_template_set = (
+        agent.template_set or getattr(board, "template_set", None) or "default"
+    )
+    specialist_templates = _available_specialist_templates(current_template_set)
+
     return {
         "agent_name": agent.name,
         "agent_id": agent_id,
@@ -384,16 +419,26 @@ def _build_context(
         "board_success_metrics": json.dumps(board.success_metrics or {}),
         "board_target_date": board.target_date.isoformat() if board.target_date else "",
         "board_goal_confirmed": str(board.goal_confirmed).lower(),
-        "board_rule_require_approval_for_done": str(board.require_approval_for_done).lower(),
-        "board_rule_require_review_before_done": str(board.require_review_before_done).lower(),
-        "board_rule_comment_required_for_review": str(board.comment_required_for_review).lower(),
+        "board_rule_require_approval_for_done": str(
+            board.require_approval_for_done
+        ).lower(),
+        "board_rule_require_review_before_done": str(
+            board.require_review_before_done
+        ).lower(),
+        "board_rule_comment_required_for_review": str(
+            board.comment_required_for_review
+        ).lower(),
         "board_rule_block_status_changes_with_pending_approval": str(
             board.block_status_changes_with_pending_approval
         ).lower(),
-        "board_rule_only_lead_can_change_status": str(board.only_lead_can_change_status).lower(),
+        "board_rule_only_lead_can_change_status": str(
+            board.only_lead_can_change_status
+        ).lower(),
         "board_rule_max_agents": str(board.max_agents),
         "is_board_lead": str(agent.is_board_lead).lower(),
         "is_main_agent": "false",
+        "template_set": current_template_set,
+        "available_agent_templates": specialist_templates,
         "session_key": session_key,
         "workspace_path": workspace_path,
         "base_url": base_url,
@@ -454,6 +499,18 @@ def _render_agent_files(
     if agent.soul_template:
         overrides["SOUL.md"] = agent.soul_template
 
+    # Apply custom template set only for board lead agents — templates like
+    # "david" or "felipe" define a specific persona and are not appropriate
+    # for the gateway agent or other supporting agents on the same board.
+    template_set = context.get("template_set", "default")
+    is_board_lead = context.get("is_board_lead", "false") == "true"
+    if is_board_lead and template_set and template_set != "default":
+        from app.services.openclaw.constants import get_template_map
+
+        custom_templates = get_template_map(template_set, is_lead=True)
+        # Custom templates win; defaults fill in anything not covered (e.g. BOOTSTRAP.md).
+        template_overrides = {**(template_overrides or {}), **custom_templates}
+
     rendered: dict[str, str] = {}
     for name in sorted(file_names):
         if name == "BOOTSTRAP.md" and not include_bootstrap:
@@ -468,14 +525,18 @@ def _render_agent_files(
             if not heartbeat_path.exists():
                 msg = f"Missing template file: {heartbeat_template}"
                 raise FileNotFoundError(msg)
-            rendered[name] = env.get_template(heartbeat_template).render(**context).strip()
+            rendered[name] = (
+                env.get_template(heartbeat_template).render(**context).strip()
+            )
             continue
         override = overrides.get(name)
         if override:
             rendered[name] = env.from_string(override).render(**context).strip()
             continue
         template_name = (
-            template_overrides[name] if template_overrides and name in template_overrides else name
+            template_overrides[name]
+            if template_overrides and name in template_overrides
+            else name
         )
         if template_name == "SOUL.md":
             # Use shared Jinja soul template as the default implementation.
@@ -506,7 +567,9 @@ class GatewayControlPlane(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def ensure_agent_session(self, session_key: str, *, label: str | None = None) -> None:
+    async def ensure_agent_session(
+        self, session_key: str, *, label: str | None = None
+    ) -> None:
         raise NotImplementedError
 
     @abstractmethod
@@ -558,7 +621,9 @@ class OpenClawGatewayControlPlane(GatewayControlPlane):
     async def health(self) -> object:
         return await openclaw_call("health", config=self._config)
 
-    async def ensure_agent_session(self, session_key: str, *, label: str | None = None) -> None:
+    async def ensure_agent_session(
+        self, session_key: str, *, label: str | None = None
+    ) -> None:
         if not session_key:
             return
         await ensure_session(session_key, config=self._config, label=label)
@@ -571,7 +636,9 @@ class OpenClawGatewayControlPlane(GatewayControlPlane):
     async def delete_agent_session(self, session_key: str) -> None:
         if not session_key:
             return
-        await openclaw_call("sessions.delete", {"key": session_key}, config=self._config)
+        await openclaw_call(
+            "sessions.delete", {"key": session_key}, config=self._config
+        )
 
     async def upsert_agent(self, registration: GatewayAgentRegistration) -> None:
         # Prefer an idempotent "create then update" flow.
@@ -591,7 +658,8 @@ class OpenClawGatewayControlPlane(GatewayControlPlane):
         except OpenClawGatewayError as exc:
             message = str(exc).lower()
             if not any(
-                marker in message for marker in ("already", "exist", "duplicate", "conflict")
+                marker in message
+                for marker in ("already", "exist", "duplicate", "conflict")
             ):
                 raise
 
@@ -629,7 +697,13 @@ class OpenClawGatewayControlPlane(GatewayControlPlane):
                     continue
                 raise
         await self.patch_agent_heartbeats(
-            [(registration.agent_id, registration.workspace_path, registration.heartbeat)],
+            [
+                (
+                    registration.agent_id,
+                    registration.workspace_path,
+                    registration.heartbeat,
+                )
+            ],
         )
 
     async def delete_agent(self, agent_id: str, *, delete_files: bool = True) -> None:
@@ -686,7 +760,9 @@ class OpenClawGatewayControlPlane(GatewayControlPlane):
         self,
         entries: list[tuple[str, str, dict[str, Any]]],
     ) -> None:
-        base_hash, raw_list, config_data = await _gateway_config_agent_list(self._config)
+        base_hash, raw_list, config_data = await _gateway_config_agent_list(
+            self._config
+        )
         entry_by_id = _heartbeat_entry_map(entries)
         new_list = _updated_agent_list(raw_list, entry_by_id)
 
@@ -696,7 +772,9 @@ class OpenClawGatewayControlPlane(GatewayControlPlane):
         # Skip config.patch entirely when nothing changed — avoids an unnecessary
         # gateway SIGUSR1 restart that rotates agent tokens and breaks active sessions.
         if new_list == raw_list and channels_patch is None and tools_patch is None:
-            logger.debug("patch_agent_heartbeats: no changes detected, skipping config.patch")
+            logger.debug(
+                "patch_agent_heartbeats: no changes detected, skipping config.patch"
+            )
             return
 
         patch: dict[str, Any] = {"agents": {"list": new_list}}
@@ -735,7 +813,8 @@ def _heartbeat_entry_map(
     entries: list[tuple[str, str, dict[str, Any]]],
 ) -> dict[str, tuple[str, dict[str, Any]]]:
     return {
-        agent_id: (workspace_path, heartbeat) for agent_id, workspace_path, heartbeat in entries
+        agent_id: (workspace_path, heartbeat)
+        for agent_id, workspace_path, heartbeat in entries
     }
 
 
@@ -835,7 +914,9 @@ class BaseAgentLifecycleManager(ABC):
         overwrite: bool = False,
     ) -> None:
         preserve_files = (
-            self._preserve_files(agent) if agent is not None else set(PRESERVE_AGENT_EDITABLE_FILES)
+            self._preserve_files(agent)
+            if agent is not None
+            else set(PRESERVE_AGENT_EDITABLE_FILES)
         )
         target_file_names = desired_file_names or set(rendered.keys())
         unsupported_names: list[str] = []
@@ -878,7 +959,9 @@ class BaseAgentLifecycleManager(ABC):
         ) - target_file_names
         for name in sorted(stale_names):
             try:
-                await self._control_plane.delete_agent_file(agent_id=agent_id, name=name)
+                await self._control_plane.delete_agent_file(
+                    agent_id=agent_id, name=name
+                )
             except OpenClawGatewayError as exc:
                 message = str(exc).lower()
                 if any(
@@ -1108,7 +1191,9 @@ def _wakeup_text(agent: Agent, *, verb: str) -> str:
 class OpenClawGatewayProvisioner:
     """Gateway-only agent lifecycle interface (create -> files -> wake)."""
 
-    async def sync_gateway_agent_heartbeats(self, gateway: Gateway, agents: list[Agent]) -> None:
+    async def sync_gateway_agent_heartbeats(
+        self, gateway: Gateway, agents: list[Agent]
+    ) -> None:
         """Sync current Agent.heartbeat_config values to the gateway config."""
         if not gateway.workspace_root:
             msg = "gateway workspace_root is required"
@@ -1159,12 +1244,16 @@ class OpenClawGatewayProvisioner:
         # Resolve session key and agent type.
         if board is None:
             session_key = (
-                agent.openclaw_session_id or GatewayAgentIdentity.session_key(gateway) or ""
+                agent.openclaw_session_id
+                or GatewayAgentIdentity.session_key(gateway)
+                or ""
             ).strip()
             if not session_key:
                 msg = "gateway main agent session_key is required"
                 raise ValueError(msg)
-            manager_type: type[BaseAgentLifecycleManager] = GatewayMainAgentLifecycleManager
+            manager_type: type[BaseAgentLifecycleManager] = (
+                GatewayMainAgentLifecycleManager
+            )
         else:
             session_key = _session_key(agent)
             manager_type = BoardAgentLifecycleManager
@@ -1235,7 +1324,9 @@ class OpenClawGatewayProvisioner:
         else:
             agent_gateway_id = _agent_key(agent)
         try:
-            await control_plane.delete_agent(agent_gateway_id, delete_files=delete_files)
+            await control_plane.delete_agent(
+                agent_gateway_id, delete_files=delete_files
+            )
         except OpenClawGatewayError as exc:
             if not _is_missing_agent_error(exc):
                 raise
@@ -1243,7 +1334,9 @@ class OpenClawGatewayProvisioner:
         if delete_session:
             if agent.board_id is None:
                 session_key = (
-                    agent.openclaw_session_id or GatewayAgentIdentity.session_key(gateway) or ""
+                    agent.openclaw_session_id
+                    or GatewayAgentIdentity.session_key(gateway)
+                    or ""
                 ).strip()
             else:
                 session_key = _session_key(agent)
