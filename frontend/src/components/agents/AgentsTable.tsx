@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-table";
 
 import { type AgentRead, type BoardRead } from "@/api/generated/model";
+import { AgentAvatar } from "@/components/agents/AgentAvatar";
 import { DataTable } from "@/components/tables/DataTable";
 import {
   dateCell,
@@ -104,12 +105,22 @@ export function AgentsTable({
       {
         accessorKey: "name",
         header: "Agent",
-        cell: ({ row }) =>
-          linkifyCell({
-            href: `/agents/${row.original.id}`,
-            label: row.original.name,
-            subtitle: `ID ${row.original.id}`,
-          }),
+        cell: ({ row }) => (
+          <a
+            href={`/agents/${row.original.id}`}
+            className="flex items-center gap-3 group"
+          >
+            <AgentAvatar name={row.original.name} size={36} className="flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="font-semibold text-slate-900 group-hover:text-indigo-600 transition truncate">
+                {row.original.name}
+              </p>
+              <p className="text-xs text-slate-500 truncate">
+                {row.original.id}
+              </p>
+            </div>
+          </a>
+        ),
       },
       {
         accessorKey: "status",

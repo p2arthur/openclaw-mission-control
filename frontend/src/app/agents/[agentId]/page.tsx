@@ -34,6 +34,9 @@ import type {
 } from "@/api/generated/model";
 import { Markdown } from "@/components/atoms/Markdown";
 import { StatusPill } from "@/components/atoms/StatusPill";
+import { AgentAvatar } from "@/components/agents/AgentAvatar";
+import { AgentProfileCard } from "@/components/agents/AgentProfileCard";
+import { AgentSkillsSection } from "@/components/agents/AgentSkillsSection";
 import { DashboardSidebar } from "@/components/organisms/DashboardSidebar";
 import { DashboardShell } from "@/components/templates/DashboardShell";
 import { Button } from "@/components/ui/button";
@@ -215,57 +218,44 @@ export default function AgentDetailPage() {
                 Loading agent details…
               </div>
             ) : agent ? (
-              <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+              <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
+                {/* Left column: Profile and Skills */}
                 <div className="space-y-6">
+                  {/* Agent Profile Card */}
+                  <AgentProfileCard
+                    agent={agent}
+                    boardName={linkedBoard?.name}
+                    boardId={linkedBoard?.id}
+                  />
+
+                  {/* Skills Section */}
+                  <AgentSkillsSection agent={agent} />
+
+                  {/* Session & Health Details */}
                   <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet">
-                          Overview
-                        </p>
-                        <p className="mt-1 text-lg font-semibold text-strong">
-                          {agent.name}
-                        </p>
-                      </div>
-                      <StatusPill status={agentStatus} />
-                    </div>
-                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet mb-4">
+                      Session & Health
+                    </p>
+                    <div className="grid gap-4 md:grid-cols-2">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet">
                           Agent ID
                         </p>
-                        <p className="mt-1 text-sm text-muted">{agent.id}</p>
+                        <p className="mt-1 text-sm text-muted font-mono text-xs break-all">
+                          {agent.id}
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet">
-                          Session key
+                          Session Key
                         </p>
-                        <p className="mt-1 text-sm text-muted">
+                        <p className="mt-1 text-sm text-muted font-mono text-xs break-all">
                           {agent.openclaw_session_id ?? "—"}
                         </p>
                       </div>
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet">
-                          Board
-                        </p>
-                        {agent.is_gateway_main ? (
-                          <p className="mt-1 text-sm text-strong">
-                            Gateway main (no board)
-                          </p>
-                        ) : linkedBoard ? (
-                          <Link
-                            href={`/boards/${linkedBoard.id}`}
-                            className="mt-1 inline-flex text-sm font-medium text-[color:var(--accent)] transition hover:underline"
-                          >
-                            {linkedBoard.name}
-                          </Link>
-                        ) : (
-                          <p className="mt-1 text-sm text-strong">—</p>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet">
-                          Last seen
+                          Last Heartbeat
                         </p>
                         <p className="mt-1 text-sm text-strong">
                           {formatRelative(agent.last_seen_at)}
@@ -282,43 +272,11 @@ export default function AgentDetailPage() {
                           {formatTimestamp(agent.updated_at)}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet">
-                          Created
-                        </p>
-                        <p className="mt-1 text-sm text-muted">
-                          {formatTimestamp(agent.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet">
-                        Health
-                      </p>
-                      <StatusPill status={agentStatus} />
-                    </div>
-                    <div className="mt-4 grid gap-3 text-sm text-muted">
-                      <div className="flex items-center justify-between">
-                        <span>Heartbeat window</span>
-                        <span>{formatRelative(agent.last_seen_at)}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Session binding</span>
-                        <span>
-                          {agent.openclaw_session_id ? "Bound" : "Unbound"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Status</span>
-                        <span className="text-strong">{agentStatus}</span>
-                      </div>
                     </div>
                   </div>
                 </div>
 
+                {/* Right column: Activity */}
                 <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-5">
                   <div className="mb-4 flex items-center justify-between">
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-quiet">
