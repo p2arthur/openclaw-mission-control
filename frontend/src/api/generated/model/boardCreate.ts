@@ -28,4 +28,5 @@ export interface BoardCreate {
   slug: string;
   success_metrics?: BoardCreateSuccessMetrics;
   target_date?: string | null;
+  template_set?: string | null;
 }

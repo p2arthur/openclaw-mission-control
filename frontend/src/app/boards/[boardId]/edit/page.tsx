@@ -44,6 +44,10 @@ import type {
   BoardUpdate,
 } from "@/api/generated/model";
 import { BoardOnboardingChat } from "@/components/BoardOnboardingChat";
+import {
+  useListTemplateSetsApiV1BoardsTemplatesGet,
+  type TemplateSet,
+} from "@/api/templates";
 import { DashboardPageLayout } from "@/components/templates/DashboardPageLayout";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
@@ -408,6 +412,14 @@ export default function EditBoardPage() {
       },
     },
   );
+  const templatesQuery = useListTemplateSetsApiV1BoardsTemplatesGet({
+    query: {
+      enabled: Boolean(isSignedIn && isAdmin),
+      refetchOnMount: "always",
+      retry: false,
+    },
+  });
+
   const agentsQuery = useListAgentsApiV1AgentsGet<
     listAgentsApiV1AgentsGetResponse,
     ApiError
@@ -495,6 +507,17 @@ export default function EditBoardPage() {
   const loadedBoard: BoardRead | null =
     boardQuery.data?.status === 200 ? boardQuery.data.data : null;
   const baseBoard = board ?? loadedBoard;
+
+  const allTemplates = useMemo<TemplateSet[]>(() => {
+    if (templatesQuery.data?.status !== 200) return [];
+    return templatesQuery.data.data ?? [];
+  }, [templatesQuery.data]);
+
+  const resolvedTemplateSet = baseBoard?.template_set ?? "default";
+  const activeTemplate = useMemo(
+    () => allTemplates.find((t) => t.id === resolvedTemplateSet) ?? null,
+    [allTemplates, resolvedTemplateSet],
+  );
 
   const resolvedName = name ?? baseBoard?.name ?? "";
   const resolvedDescription = description ?? baseBoard?.description ?? "";
@@ -794,6 +817,22 @@ export default function EditBoardPage() {
                 </Button>
               </div>
             ) : null}
+            {activeTemplate ? (
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                <span className="text-base" aria-hidden="true">
+                  {activeTemplate.emoji}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900">
+                    Lead agent template: {activeTemplate.name}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {activeTemplate.description}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-900">
@@ -1292,6 +1331,7 @@ export default function EditBoardPage() {
           {boardId ? (
             <BoardOnboardingChat
               boardId={boardId}
+              activeTemplate={activeTemplate}
               onConfirmed={handleOnboardingConfirmed}
             />
           ) : (

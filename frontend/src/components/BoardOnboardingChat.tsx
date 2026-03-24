@@ -24,6 +24,7 @@ import type {
   BoardOnboardingReadMessages,
   BoardRead,
 } from "@/api/generated/model";
+import type { TemplateSet } from "@/api/templates";
 
 type NormalizedMessage = {
   role: string;
@@ -135,9 +136,11 @@ const parseQuestion = (messages?: NormalizedMessage[] | null) => {
 
 export function BoardOnboardingChat({
   boardId,
+  activeTemplate,
   onConfirmed,
 }: {
   boardId: string;
+  activeTemplate?: TemplateSet | null;
   onConfirmed: (board: BoardRead) => void;
 }) {
   const isPageActive = usePageActive();
@@ -381,7 +384,11 @@ export function BoardOnboardingChat({
   return (
     <div className="space-y-4">
       <DialogHeader>
-        <DialogTitle>Board onboarding</DialogTitle>
+        <DialogTitle>
+          {activeTemplate && activeTemplate.id !== "default"
+            ? `Setting up ${activeTemplate.emoji} ${activeTemplate.name}`
+            : "Board onboarding"}
+        </DialogTitle>
       </DialogHeader>
 
       {error ? (
@@ -450,7 +457,7 @@ export function BoardOnboardingChat({
                 </p>
               </>
             ) : null}
-            {draft.lead_agent ? (
+            {draft.lead_agent && (!activeTemplate || activeTemplate.id === "default") ? (
               <>
                 <p className="mt-4 font-semibold text-slate-900">
                   Lead agent preferences
@@ -642,7 +649,9 @@ export function BoardOnboardingChat({
       ) : (
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
           {loading
-            ? "Waiting for the lead agent..."
+            ? activeTemplate && activeTemplate.id !== "default"
+              ? `Waiting for ${activeTemplate.name}...`
+              : "Waiting for the lead agent..."
             : "Preparing onboarding..."}
         </div>
       )}

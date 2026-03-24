@@ -31,5 +31,7 @@ export interface BoardRead {
   slug: string;
   success_metrics?: BoardReadSuccessMetrics;
   target_date?: string | null;
+  /** Agent template set used when the board was created (e.g. "david", "default") */
+  template_set?: string;
   updated_at: string;
 }

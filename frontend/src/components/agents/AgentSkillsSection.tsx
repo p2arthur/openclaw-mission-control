@@ -66,6 +66,36 @@ const AGENT_SKILLS: Record<string, Record<string, { emoji: string; description: 
       description: "Delivery risk detection, velocity tracking (lead only)",
     },
   },
+  job_seeker_coach: {
+    "Resume Writing": {
+      emoji: "📄",
+      description: "ATS optimization, achievement bullets, tailoring for job descriptions",
+    },
+    "Interview Preparation": {
+      emoji: "🎤",
+      description: "STAR methodology, behavioral Q&A, technical interview strategies",
+    },
+    "Job Search Strategy": {
+      emoji: "🗺️",
+      description: "Pipeline management, application prioritization, target company research",
+    },
+    "LinkedIn Optimization": {
+      emoji: "🔗",
+      description: "Profile headline, keywords, connection strategy",
+    },
+    "Salary Negotiation": {
+      emoji: "💰",
+      description: "Market research, anchoring, counter-offer framing",
+    },
+    "Network Building": {
+      emoji: "🤝",
+      description: "Warm outreach, informational interviews, referral pipelines",
+    },
+    "Pipeline Review": {
+      emoji: "📊",
+      description: "Application tracking, conversion rates, offer management (lead only)",
+    },
+  },
 };
 
 /**
@@ -113,10 +143,16 @@ export function AgentSkillsSection({ agent }: AgentSkillsSectionProps) {
 
   const skillEntries = Object.entries(skills);
   const leadSkills = skillEntries.filter(
-    ([name]) => name.toLowerCase().includes("delegation") || name.toLowerCase().includes("board health")
+    ([name]) =>
+      name.toLowerCase().includes("delegation") ||
+      name.toLowerCase().includes("board health") ||
+      name.toLowerCase().includes("pipeline review")
   );
   const coreSkills = skillEntries.filter(
-    ([name]) => !name.toLowerCase().includes("delegation") && !name.toLowerCase().includes("board health")
+    ([name]) =>
+      !name.toLowerCase().includes("delegation") &&
+      !name.toLowerCase().includes("board health") &&
+      !name.toLowerCase().includes("pipeline review")
   );
 
   return (

@@ -1,3 +1,4 @@
+// filepath: /home/arthur/openclaw-mission-control/frontend/src/components/organisms/DashboardSidebar.tsx
 "use client";
 
 import Link from "next/link";
@@ -13,6 +14,7 @@ import {
   LayoutGrid,
   Network,
   Settings,
+  Sparkles,
   Store,
   Tags,
 } from "lucide-react";
@@ -170,9 +172,33 @@ export function DashboardSidebar() {
             {isAdmin ? (
               <>
                 <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                  Skills
+                  Skills & Agents
                 </p>
                 <div className="mt-1 space-y-1">
+                  <Link
+                    href="/agents"
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                      pathname.startsWith("/agents")
+                        ? "bg-blue-100 text-blue-800 font-medium"
+                        : "hover:bg-slate-100",
+                    )}
+                  >
+                    <Bot className="h-4 w-4" />
+                    Agent profiles
+                  </Link>
+                  <Link
+                    href="/agent-templates"
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
+                      pathname.startsWith("/agent-templates")
+                        ? "bg-blue-100 text-blue-800 font-medium"
+                        : "hover:bg-slate-100",
+                    )}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Agent templates
+                  </Link>
                   <Link
                     href="/skills/marketplace"
                     className={cn(
@@ -232,20 +258,6 @@ export function DashboardSidebar() {
                 >
                   <Network className="h-4 w-4" />
                   Gateways
-                </Link>
-              ) : null}
-              {isAdmin ? (
-                <Link
-                  href="/agents"
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-slate-700 transition",
-                    pathname.startsWith("/agents")
-                      ? "bg-blue-100 text-blue-800 font-medium"
-                      : "hover:bg-slate-100",
-                  )}
-                >
-                  <Bot className="h-4 w-4" />
-                  Agents
                 </Link>
               ) : null}
             </div>

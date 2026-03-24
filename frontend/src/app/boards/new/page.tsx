@@ -1,13 +1,17 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { Sparkles } from "lucide-react";
+
 import { useAuth } from "@/auth/clerk";
 
+import {
+  useListTemplateSetsApiV1BoardsTemplatesGet,
+  type TemplateSet,
+} from "@/api/templates";
 import { ApiError } from "@/api/mutator";
 import { useCreateBoardApiV1BoardsPost } from "@/api/generated/boards/boards";
 import {
@@ -43,6 +47,7 @@ export default function NewBoardPage() {
   const [description, setDescription] = useState("");
   const [gatewayId, setGatewayId] = useState<string>("");
   const [boardGroupId, setBoardGroupId] = useState<string>("none");
+  const [templateSet, setTemplateSet] = useState<string>("default");
 
   const [error, setError] = useState<string | null>(null);
 
@@ -68,6 +73,14 @@ export default function NewBoardPage() {
     },
   });
 
+  const templatesQuery = useListTemplateSetsApiV1BoardsTemplatesGet({
+    query: {
+      enabled: Boolean(isSignedIn && isAdmin),
+      refetchOnMount: true,
+      retry: false,
+    },
+  });
+
   const createBoardMutation = useCreateBoardApiV1BoardsPost<ApiError>({
     mutation: {
       onSuccess: (result) => {
@@ -89,13 +102,23 @@ export default function NewBoardPage() {
     if (groupsQuery.data?.status !== 200) return [];
     return groupsQuery.data.data.items ?? [];
   }, [groupsQuery.data]);
+  const templates = useMemo<TemplateSet[]>(() => {
+    if (templatesQuery.data?.status !== 200) return [];
+    return templatesQuery.data.data ?? [];
+  }, [templatesQuery.data]);
+
   const displayGatewayId = gatewayId || gateways[0]?.id || "";
   const isLoading =
     gatewaysQuery.isLoading ||
     groupsQuery.isLoading ||
+    templatesQuery.isLoading ||
     createBoardMutation.isPending;
   const errorMessage =
-    error ?? gatewaysQuery.error?.message ?? groupsQuery.error?.message ?? null;
+    error ??
+    gatewaysQuery.error?.message ??
+    groupsQuery.error?.message ??
+    templatesQuery.error?.message ??
+    null;
 
   const isFormReady = Boolean(
     name.trim() && description.trim() && displayGatewayId,
@@ -113,6 +136,20 @@ export default function NewBoardPage() {
       ...groups.map((group) => ({ value: group.id, label: group.name })),
     ],
     [groups],
+  );
+
+  const templateOptions = useMemo(
+    () =>
+      templates.map((template) => ({
+        value: template.id,
+        label: `${template.emoji} ${template.name}`,
+      })),
+    [templates],
+  );
+
+  const selectedTemplate = useMemo(
+    () => templates.find((t) => t.id === templateSet),
+    [templates, templateSet],
   );
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -143,6 +180,7 @@ export default function NewBoardPage() {
         description: trimmedDescription,
         gateway_id: resolvedGatewayId,
         board_group_id: boardGroupId === "none" ? null : boardGroupId,
+        template_set: templateSet,
       },
     });
   };
@@ -216,6 +254,32 @@ export default function NewBoardPage() {
               <p className="text-xs text-slate-500">
                 Optional. Groups increase cross-board visibility.
               </p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-900">
+                <span className="inline-flex items-center gap-1">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  Agent template
+                </span>
+              </label>
+              <SearchableSelect
+                ariaLabel="Select agent template"
+                value={templateSet}
+                onValueChange={setTemplateSet}
+                options={templateOptions}
+                placeholder="Default"
+                searchPlaceholder="Search templates..."
+                emptyMessage="No templates found."
+                triggerClassName="w-full h-11 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                contentClassName="rounded-xl border border-slate-200 shadow-lg"
+                itemClassName="px-4 py-3 text-sm text-slate-700 data-[selected=true]:bg-slate-50 data-[selected=true]:text-slate-900"
+                disabled={isLoading}
+              />
+              {selectedTemplate && (
+                <p className="text-xs text-slate-500">
+                  {selectedTemplate.description}
+                </p>
+              )}
             </div>
           </div>
 
