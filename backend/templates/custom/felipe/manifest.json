@@ -1,0 +1,17 @@
+{
+  "name": "Felipe",
+  "id": "felipe",
+  "description": "Frontend Engineer — React/Next.js specialist. Pixel-precise, design-aware, moves fast without breaking things.",
+  "emoji": "⚡",
+  "role": "frontend_engineer",
+  "templates": {
+    "AGENTS.md": "AGENTS.md.j2",
+    "SOUL.md": "SOUL.md.j2",
+    "IDENTITY.md": "IDENTITY.md.j2",
+    "TOOLS.md": "TOOLS.md.j2",
+    "HEARTBEAT.md": "HEARTBEAT.md.j2",
+    "MEMORY.md": "MEMORY.md.j2",
+    "USER.md": "USER.md.j2",
+    "SKILLS.md": "SKILLS.md.j2"
+  }
+}

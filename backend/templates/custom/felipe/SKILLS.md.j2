@@ -1,0 +1,180 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+# Skills — What I Load
+
+_Skills are specialized knowledge I pull in when the task calls for it. This file tells me which ones are available and when to reach for them._
+
+---
+
+## How Skills Work
+
+Skills are markdown files with structured instructions. When a task matches a skill's trigger, I read the skill file and follow its guidance.
+
+**Read order:**
+1. Check task context — what's being asked?
+2. Match against triggers below
+3. Load the skill file
+4. Follow its instructions
+
+---
+
+## Available Skills
+
+### Component Architecture
+
+**Trigger:** New component creation, refactoring existing components, component interface design
+
+**When to use:**
+- Building a new UI component from scratch
+- Refactoring a component for reusability
+- Defining props/interfaces for component APIs
+- Breaking down complex components into composition patterns
+
+**What it covers:**
+- Atomic design principles (atoms → molecules → organisms)
+- Props interface design and defaults
+- Controlled vs uncontrolled patterns
+- Composition over inheritance
+- Render props and children patterns
+
+---
+
+### Accessibility (a11y)
+
+**Trigger:** Any UI task — accessibility is non-optional, but this skill activates specifically for complex interactive components
+
+**When to use:**
+- Building interactive components (modals, dropdowns, forms, tabs)
+- Implementing keyboard navigation
+- Adding ARIA attributes
+- Testing with screen readers
+- Color contrast and focus management
+
+**What it covers:**
+- WCAG 2.1 AA compliance checklist
+- ARIA roles, states, and properties reference
+- Keyboard interaction patterns (tab, arrow, enter, escape)
+- Focus trap implementation
+- Screen reader announcement patterns
+
+---
+
+### Responsive Design
+
+**Trigger:** Layout work, CSS/styling tasks, viewport-specific behavior
+
+**When to use:**
+- Building layouts that work across mobile/tablet/desktop
+- Implementing responsive typography and spacing
+- Handling touch vs mouse interactions
+- Optimizing for different viewport sizes
+
+**What it covers:**
+- Mobile-first CSS approach
+- Breakpoint strategy (375px, 768px, 1280px+)
+- Container queries vs media queries
+- Fluid typography and spacing
+- Touch target sizing (min 44x44px)
+
+---
+
+### State Management
+
+**Trigger:** Data flow questions, complex form state, global state patterns, data fetching
+
+**When to use:**
+- Deciding between local state, context, and external stores
+- Implementing complex form state (multi-step, validated)
+- Managing server state (cache, optimistic updates)
+- Debugging state-related bugs
+
+**What it covers:**
+- useState vs useReducer vs context vs external store
+- React Query / SWR for server state
+- Form libraries (React Hook Form, Formik)
+- State colocation principle
+- Derived state patterns
+
+---
+
+### Testing
+
+**Trigger:** Writing tests, test strategy, test coverage questions
+
+**When to use:**
+- Writing unit tests for component logic
+- Writing integration tests for user flows
+- Setting up test utilities and mocks
+- Deciding what to test and what to skip
+
+**What it covers:**
+- Testing Library best practices (query priority, user-centric tests)
+- Mock strategies (MSW for API, jest.mock for modules)
+- Snapshot tests — when yes, when no
+- Accessibility testing automation (axe-core)
+- Visual regression testing approach
+
+---
+
+### CSS / Styling
+
+**Trigger:** Styling questions, CSS architecture, design token usage
+
+**When to use:**
+- Implementing design system tokens
+- Choosing between CSS modules, Tailwind, styled-components
+- Animations and transitions
+- Dark mode / theming
+
+**What it covers:**
+- Design token implementation (colors, spacing, typography)
+- CSS specificity and cascade management
+- Animation performance (transform/opacity vs layout triggers)
+- Theming patterns (CSS variables, data attributes)
+
+---
+
+{% if is_lead %}
+### Delegation & Task Breakdown
+
+**Trigger:** Planning frontend work, breaking down features, assigning tasks
+
+**When to use:**
+- Translating design specs into executable tasks
+- Identifying component dependencies
+- Sequencing work to enable parallelization
+- Writing clear acceptance criteria
+
+**What it covers:**
+- Component dependency graphing
+- Task granularity (2-4 hour chunks)
+- Acceptance criteria format (Given/When/Then or checklist)
+- Blocker identification and isolation
+{% endif %}
+
+---
+
+## Skill Gaps
+
+_No skills are perfect. When a task falls between skills or requires knowledge not covered here:_
+
+1. Check if the task is actually in scope (ask `@lead` if unclear)
+2. Research the specific pattern or API
+3. Document the approach in task comments
+4. If it happens repeatedly, propose adding a new skill
+
+---
+
+## Adding New Skills
+
+Skills live in the agent's workspace. To add a skill:
+
+1. Create `skills/<skill-name>/SKILL.md` in the workspace
+2. Follow the format: trigger, when-to-use, what-it-covers
+3. Update this file to reference it
+4. Test it on a real task
+
+Skills are **soft enforcement** — they guide behavior, they don't gate it. If a skill conflicts with a direct instruction, the instruction wins.
+
+---
+
+_Felipe — I know what I'm good at. I load the right tool for the job. ⚡_

@@ -1,0 +1,158 @@
+{% set is_lead = (is_board_lead | default(false) | string | lower) in ["true", "1", "yes"] %}
+# Skills — What I Load
+
+_Skills are specialized knowledge I pull in when the task calls for it. This file tells me which ones are available and when to reach for them._
+
+---
+
+## How Skills Work
+
+Skills are markdown files with structured instructions. When a task matches a skill's trigger, I read the skill file and follow its guidance.
+
+**Read order:**
+1. Check task context — what's being asked?
+2. Match against triggers below
+3. Load the skill file
+4. Follow its instructions
+
+---
+
+## Available Skills
+
+### Task Scoping & Planning
+
+**Trigger:** New feature requests, epic breakdown, sprint planning, requirement gathering
+
+**When to use:**
+- Breaking down a vague request into concrete tasks
+- Estimating complexity and sequencing work
+- Identifying dependencies between tasks
+- Writing acceptance criteria
+
+**What it covers:**
+- INVEST criteria for user stories
+- Task granularity (2-4 hour chunks)
+- Dependency graphing
+- Acceptance criteria formats (Given/When/Then, checklists)
+- Risk identification and mitigation
+
+---
+
+### Stakeholder Communication
+
+**Trigger:** Status updates, blocker escalation, scope negotiation, demo prep
+
+**When to use:**
+- Writing status updates for humans
+- Escalating blockers with clear asks
+- Negotiating scope or timeline changes
+- Preparing demos or walkthroughs
+
+**What it covers:**
+- Status update structure (what's done, what's next, what's blocked)
+- Blocker escalation format (problem → impact → ask)
+- Scope negotiation (trade-off framing)
+- Demo storytelling (problem → solution → value)
+
+---
+
+### Technical Decision Records
+
+**Trigger:** Architecture decisions, technology choices, pattern selection
+
+**When to use:**
+- Documenting why we chose approach A over B
+- Recording trade-offs and constraints
+- Creating a decision log for future reference
+- Onboarding new team members to past decisions
+
+**What it covers:**
+- ADR (Architecture Decision Record) format
+- Context → Decision → Consequences structure
+- When to document vs when to just decide
+- Linking decisions to tasks and outcomes
+
+---
+
+### Agent Coordination
+
+**Trigger:** Multi-agent workflows, delegation, cross-team dependencies, conflict resolution
+
+**When to use:**
+- Spawning or retiring specialist agents
+- Coordinating work across multiple agents
+- Resolving conflicting approaches between agents
+- Managing handoffs between workstreams
+
+**What it covers:**
+- Delegation clarity (owner, scope, deadline, acceptance)
+- Conflict resolution (data → impact → recommendation)
+- Handoff protocols (context transfer, verification)
+- Agent lifecycle management (spawn → assign → monitor → retire)
+
+---
+
+### Quality Gates & Review
+
+**Trigger:** Task completion, review requests, definition of done checks
+
+**When to use:**
+- Reviewing completed work against acceptance criteria
+- Enforcing quality standards before status transitions
+- Checking for scope creep or missing requirements
+- Validating cross-functional completeness
+
+**What it covers:**
+- Definition of Done checklist
+- Review criteria (functionality, quality, documentation, testing)
+- Scope verification
+- Cross-functional impact assessment
+
+---
+
+{% if is_lead %}
+### Board Health Monitoring
+
+**Trigger:** Heartbeat checks, proactive status assessment, delivery risk detection
+
+**When to use:**
+- Checking if work is progressing as expected
+- Detecting stalled tasks or blocked agents
+- Identifying delivery risks early
+- Adjusting plans based on actual velocity
+
+**What it covers:**
+- Task status distribution analysis
+- Agent workload balance
+- Blocker age tracking
+- Velocity vs capacity comparison
+- Proactive intervention triggers
+{% endif %}
+
+---
+
+## Skill Gaps
+
+_No skills are perfect. When a task falls between skills or requires knowledge not covered here:_
+
+1. Check if the task is actually in scope for a PM
+2. Research the specific domain or pattern
+3. Document the approach in task comments or MEMORY.md
+4. If it happens repeatedly, propose adding a new skill
+
+---
+
+## Adding New Skills
+
+Skills live in the agent's workspace. To add a skill:
+
+1. Create `skills/<skill-name>/SKILL.md` in the workspace
+2. Follow the format: trigger, when-to-use, what-it-covers
+3. Update this file to reference it
+4. Test it on a real task
+
+Skills are **soft enforcement** — they guide behavior, they don't gate it. If a skill conflicts with a direct instruction, the instruction wins.
+
+---
+
+_David — I know how to plan it, scope it, and get it shipped. 🎯_

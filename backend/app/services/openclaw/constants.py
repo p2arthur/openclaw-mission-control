@@ -119,6 +119,90 @@ BOARD_SHARED_TEMPLATE_MAP = {
 
 LEAD_TEMPLATE_MAP: dict[str, str] = {}
 
+# Custom agent template sets
+# These are user-defined templates stored in backend/templates/custom/
+CUSTOM_TEMPLATE_SETS = {
+    "david": {
+        "name": "David",
+        "description": "Technical Product Manager — your friendly PM with engineering chops",
+        "emoji": "🎯",
+        "templates": {
+            "AGENTS.md": "custom/david/AGENTS.md.j2",
+            "SOUL.md": "custom/david/SOUL.md.j2",
+            "IDENTITY.md": "custom/david/IDENTITY.md.j2",
+            "TOOLS.md": "custom/david/TOOLS.md.j2",
+            "HEARTBEAT.md": "custom/david/HEARTBEAT.md.j2",
+            "MEMORY.md": "custom/david/MEMORY.md.j2",
+            "USER.md": "custom/david/USER.md.j2",
+            "SKILLS.md": "custom/david/SKILLS.md.j2",
+        },
+    },
+    "felipe": {
+        "name": "Felipe",
+        "description": "Frontend Engineer — React/Next.js specialist. Pixel-precise, design-aware, moves fast without breaking things.",
+        "emoji": "⚡",
+        "templates": {
+            "AGENTS.md": "custom/felipe/AGENTS.md.j2",
+            "SOUL.md": "custom/felipe/SOUL.md.j2",
+            "IDENTITY.md": "custom/felipe/IDENTITY.md.j2",
+            "TOOLS.md": "custom/felipe/TOOLS.md.j2",
+            "HEARTBEAT.md": "custom/felipe/HEARTBEAT.md.j2",
+            "MEMORY.md": "custom/felipe/MEMORY.md.j2",
+            "USER.md": "custom/felipe/USER.md.j2",
+            "SKILLS.md": "custom/felipe/SKILLS.md.j2",
+        },
+    },
+}
+
+DEFAULT_TEMPLATE_SET = "default"
+
+
+def get_template_map(template_set: str = DEFAULT_TEMPLATE_SET, is_lead: bool = False) -> dict[str, str]:
+    """Get the template mapping for a given template set.
+    
+    Args:
+        template_set: The template set name ("default" or custom like "david")
+        is_lead: Whether this is for a board lead agent
+        
+    Returns:
+        Dictionary mapping output filenames to template paths
+    """
+    if template_set == DEFAULT_TEMPLATE_SET or template_set not in CUSTOM_TEMPLATE_SETS:
+        # Use default templates
+        if is_lead:
+            return {**BOARD_SHARED_TEMPLATE_MAP, **LEAD_TEMPLATE_MAP}
+        return BOARD_SHARED_TEMPLATE_MAP
+    
+    # Use custom template set
+    return CUSTOM_TEMPLATE_SETS[template_set]["templates"]
+
+
+def get_template_set_manifest(template_set: str) -> dict[str, Any] | None:
+    """Get the manifest config for a named template set, or None if not found."""
+    return CUSTOM_TEMPLATE_SETS.get(template_set)
+
+
+def list_available_template_sets() -> list[dict[str, str]]:
+    """List all available template sets for UI display."""
+    templates = [
+        {
+            "id": DEFAULT_TEMPLATE_SET,
+            "name": "Default",
+            "description": "Standard Mission Control agent",
+            "emoji": "⚙️",
+        }
+    ]
+    
+    for template_id, config in CUSTOM_TEMPLATE_SETS.items():
+        templates.append({
+            "id": template_id,
+            "name": config["name"],
+            "description": config["description"],
+            "emoji": config.get("emoji", "🤖"),
+        })
+    
+    return templates
+
 _TOOLS_KV_RE = re.compile(r"^(?P<key>[A-Z0-9_]+)=(?P<value>.*)$")
 _NON_TRANSIENT_GATEWAY_ERROR_MARKERS = ("unsupported file",)
 _TRANSIENT_GATEWAY_ERROR_MARKERS = (
