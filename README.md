@@ -20,6 +20,7 @@ Core operational areas:
 
 - Work orchestration: manage organizations, board groups, boards, tasks, and tags.
 - Agent operations: create, inspect, and manage agent lifecycle from a unified control surface.
+- Per-agent templates: role-based agent personas with defined skills and behavior patterns.
 - Governance and approvals: route sensitive actions through explicit approval flows.
 - Gateway management: connect and operate gateway integrations for distributed environments.
 - Activity visibility: review a timeline of system actions for faster debugging and accountability.
@@ -141,6 +142,74 @@ docker compose -f compose.yml --env-file .env up -d --force-recreate
 ```bash
 docker compose -f compose.yml --env-file .env down
 ```
+
+## Remote Access (SSH Tunnel)
+
+Mission Control can run on a server while you access it from your laptop. Use an SSH tunnel to forward ports locally.
+
+**Quick setup — add to your shell profile:**
+
+```bash
+# Mission Control launcher
+agents-mission-control() {
+  # Try direct SSH first, fall back to Tailscale address
+  if ssh -q -o ConnectTimeout=2 home_lab exit 2>/dev/null; then
+    HOST="home_lab"
+  else
+    HOST="tailscale_home_lab"
+  fi
+
+  # Check if already connected with the right forwards
+  if ! lsof -i :6969 -i :8000 -i :18789 2>/dev/null | grep -q ssh; then
+    echo "🚀 Connecting to $HOST with port forwards..."
+    ssh -f -N -L 6969:localhost:6969 -L 8000:localhost:8000 -L 18789:localhost:18789 "$HOST"
+    sleep 1
+  fi
+
+  echo "🌿 Opening Mission Control..."
+  open http://localhost:6969
+}
+```
+
+**What gets forwarded:**
+| Port | Service |
+|------|---------|
+| 6969 | Mission Control UI (frontend) |
+| 8000 | Mission Control API (backend) |
+| 18789 | OpenClaw Gateway WebSocket |
+
+**SSH config** (`~/.ssh/config`):
+
+```ssh
+Host home_lab
+    HostName 192.168.1.x
+    User your_user
+    LocalForward 6969 localhost:6969
+    LocalForward 8000 localhost:8000
+    LocalForward 18789 localhost:18789
+
+Host tailscale_home_lab
+    HostName 100.x.x.x
+    User your_user
+    LocalForward 6969 localhost:6969
+    LocalForward 8000 localhost:8000
+    LocalForward 18789 localhost:18789
+```
+
+Then set `OPENCLAW_GATEWAY_URL=ws://127.0.0.1:18789` and `OPENCLAW_GATEWAY_TOKEN=<your-token>` in your Mission Control `.env`.
+
+## Agent Templates
+
+Mission Control supports per-agent templates that define persona, skills, and behavior.
+
+**Built-in templates:**
+- **David** — Technical Product Manager (task scoping, stakeholder comms, agent coordination)
+- **Felipe** — Frontend Engineer (component architecture, a11y, responsive design, state management)
+- **Jordan** — Backend Engineer (API design, data modeling, security, performance)
+
+Each template includes: SOUL.md, AGENTS.md, IDENTITY.md, USER.md, MEMORY.md, TOOLS.md, HEARTBEAT.md, and role-specific SKILLS.md.
+
+Browse templates at `/agent-templates/[templateId]` in the UI.
 
 ## Authentication
 
