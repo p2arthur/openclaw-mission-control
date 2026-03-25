@@ -499,17 +499,22 @@ def _render_agent_files(
     if agent.soul_template:
         overrides["SOUL.md"] = agent.soul_template
 
-    # Apply custom template set only for board lead agents — templates like
-    # "david" or "felipe" define a specific persona and are not appropriate
-    # for the gateway agent or other supporting agents on the same board.
+    # Apply custom template set for any board-scoped agent with a non-default
+    # template_set.  The Jinja2 templates already branch on `is_board_lead`
+    # (e.g. {% if is_lead %}) to emit role-appropriate content, so both leads
+    # and workers can safely share the same template file.
     template_set = context.get("template_set", "default")
-    is_board_lead = context.get("is_board_lead", "false") == "true"
-    if is_board_lead and template_set and template_set != "default":
+    is_main_agent = context.get("is_main_agent", "false") == "true"
+    if not is_main_agent and template_set and template_set != "default":
         from app.services.openclaw.constants import get_template_map
 
         custom_templates = get_template_map(template_set, is_lead=True)
         # Custom templates win; defaults fill in anything not covered (e.g. BOOTSTRAP.md).
         template_overrides = {**(template_overrides or {}), **custom_templates}
+        # Custom template sets may include files outside the default set
+        # (e.g. SKILLS.md).  Merge them into file_names so they get rendered.
+        extra_files = set(custom_templates.keys()) - file_names
+        file_names = file_names | extra_files
 
     rendered: dict[str, str] = {}
     for name in sorted(file_names):
@@ -1081,6 +1086,12 @@ class BoardAgentLifecycleManager(BaseAgentLifecycleManager):
         overrides = dict(BOARD_SHARED_TEMPLATE_MAP)
         if agent.is_board_lead:
             overrides.update(LEAD_TEMPLATE_MAP)
+        # Respect custom template_set for workers too — the Jinja2 templates
+        # branch on `is_board_lead` to emit role-appropriate content.
+        template_set = agent.template_set
+        if template_set and template_set != "default":
+            from app.services.openclaw.constants import get_template_map
+            overrides.update(get_template_map(template_set, is_lead=True))
         return overrides
 
     def _file_names(self, agent: Agent) -> set[str]:

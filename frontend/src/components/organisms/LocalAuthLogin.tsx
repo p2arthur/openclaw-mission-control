@@ -97,7 +97,7 @@ export function LocalAuthLogin({ onAuthenticated }: LocalAuthLoginProps) {
           </div>
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold tracking-tight text-strong">
-              Local Authentication
+              Local Authentication - b094b80dc4229009232f51febd2c69973c2d0313242e13407d4035a926f7a9e7
             </h1>
             <p className="text-sm text-muted">
               Enter your access token to unlock Mission Control.

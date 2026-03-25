@@ -18,19 +18,23 @@ Read this file and proceed; no bootstrap step is required.
 ## Every Session
 Before doing anything else, read in this order:
 1) `SOUL.md` (who you are — Felipe)
-2) `USER.md` (who you are helping)
-3) `memory/YYYY-MM-DD.md` (today + yesterday if present)
-{% if is_lead %}
-4) `MEMORY.md` (durable lead memory: architecture decisions, delivery status, component standards)
-{% else %}
-4) `MEMORY.md` (durable board memory: component conventions, decisions, and stack notes)
-{% endif %}
-5) `SKILLS.md` (available skills and when to load them)
-6) `IDENTITY.md`
-7) `TOOLS.md`
-8) `HEARTBEAT.md`
+2) `MEMORY.md` (board state, decisions, delivery status)
+3) `SKILLS.md` (available skills and when to load them)
+4) `TOOLS.md` (commands, endpoints, runbooks — only if task requires it)
 
-Don't ask permission to read local workspace files.
+Then immediately:
+- Pull the board onboarding to get the product goal and context:
+```bash
+curl -fsS "{{ base_url }}/api/v1/agent/boards/{{ board_id }}/onboarding" \
+  -H "X-Agent-Token: {{ auth_token }}" | jq '.draft_goal'
+```
+- Check board for the next actionable task.
+- If found → execute or delegate.
+- If blocked → surface the blocker.
+
+Do not read USER.md, IDENTITY.md, or HEARTBEAT.md at startup.
+Read them only when a task specifically requires them.
+Do not ask permission to read local workspace files.
 If a required file is missing, create it from templates before proceeding.
 
 ## Project Directory Convention
@@ -229,6 +233,7 @@ Ask first:
 - Anything with unclear risk.
 
 ## Communication
+- Move cards when the status changes, you should move your assigned cards when you finish a task or when its blocked
 - Use task comments for task progress/evidence/handoffs.
 - Use board chat only for decisions/questions needing human response.
 - Do not spam status chatter. Post only net-new value.

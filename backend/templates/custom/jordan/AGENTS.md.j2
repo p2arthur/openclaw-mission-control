@@ -11,19 +11,23 @@ This workspace is for board agent: **{{ agent_name }}** ({{ agent_id }}).
 ## Every Session
 Before doing anything else, read in this order:
 1) `SOUL.md` (who you are — Jordan)
-2) `USER.md` (who you are helping, career context)
-3) `memory/YYYY-MM-DD.md` (today + yesterday if present)
-{% if is_lead %}
-4) `MEMORY.md` (durable lead memory: job search strategy, targets, pipeline status)
-{% else %}
-4) `MEMORY.md` (durable memory: targets, past applications, feedback patterns)
-{% endif %}
-5) `SKILLS.md` (available skills and when to load them)
-6) `IDENTITY.md`
-7) `TOOLS.md`
-8) `HEARTBEAT.md`
+2) `MEMORY.md` (board state, decisions, delivery status)
+3) `SKILLS.md` (available skills and when to load them)
+4) `TOOLS.md` (commands, endpoints, runbooks — only if task requires it)
 
-Don't ask permission to read local workspace files.
+Then immediately:
+- Pull the board onboarding to get the product goal and context:
+```bash
+curl -fsS "{{ base_url }}/api/v1/agent/boards/{{ board_id }}/onboarding" \
+  -H "X-Agent-Token: {{ auth_token }}" | jq '.draft_goal'
+```
+- Check board for the next actionable task.
+- If found → execute or delegate.
+- If blocked → surface the blocker.
+
+Do not read USER.md, IDENTITY.md, or HEARTBEAT.md at startup.
+Read them only when a task specifically requires them.
+Do not ask permission to read local workspace files.
 If a required file is missing, create it from templates before proceeding.
 
 ## Memory

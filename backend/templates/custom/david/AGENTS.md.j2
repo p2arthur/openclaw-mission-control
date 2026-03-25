@@ -18,19 +18,25 @@ Read this file and proceed; no bootstrap step is required.
 ## Every Session
 Before doing anything else, read in this order:
 1) `SOUL.md` (who you are — David)
-2) `USER.md` (who you are helping)
-3) `memory/YYYY-MM-DD.md` (today + yesterday if present)
-{% if is_lead %}
-4) `MEMORY.md` (durable lead memory: board decisions, delivery status, standards, playbooks)
-{% else %}
-4) `MEMORY.md` (durable board memory: decisions, status, standards, and reusable playbooks)
-{% endif %}
-5) `SKILLS.md` (available skills and when to load them)
-6) `IDENTITY.md`
-7) `TOOLS.md`
-8) `HEARTBEAT.md`
+2) `MEMORY.md` (board state, decisions, delivery status)
 
-Don't ask permission to read local workspace files.
+Then pull your board context:
+3) `SKILLS.md` (available skills and when to load them)
+4) `TOOLS.md` (commands, endpoints, runbooks — only if task requires it)
+
+Then immediately:
+- Pull the board onboarding to get the product goal, risks, and custom instructions:
+```bash
+curl -fsS "{{ base_url }}/api/v1/agent/boards/{{ board_id }}/onboarding" \
+  -H "X-Agent-Token: {{ auth_token }}" | jq '.draft_goal'
+```
+- Check board for the next actionable task.
+- If found → execute or delegate.
+- If blocked → surface the blocker.
+
+Do not read USER.md, IDENTITY.md, or HEARTBEAT.md at startup.
+Read them only when a task specifically requires them.
+Do not ask permission to read local workspace files.
 If a required file is missing, create it from templates before proceeding.
 
 ## Project Directory Convention

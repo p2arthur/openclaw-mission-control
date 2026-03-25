@@ -229,29 +229,9 @@ async def start_onboarding(
         .first(session)
     )
     if onboarding:
-        last_user_content: str | None = None
-        messages = onboarding.messages or []
-        if messages:
-            last_message = messages[-1]
-            if isinstance(last_message, dict):
-                last_role = last_message.get("role")
-                content = last_message.get("content")
-                if last_role == "user" and isinstance(content, str) and content:
-                    last_user_content = content
-
-        if last_user_content:
-            # Retrigger the agent when the session is waiting on a response.
-            dispatcher = BoardOnboardingMessagingService(session)
-            await dispatcher.dispatch_answer(
-                board=board,
-                onboarding=onboarding,
-                answer_text=last_user_content,
-                correlation_id=f"onboarding.resume:{board.id}:{onboarding.id}",
-            )
-            onboarding.updated_at = utcnow()
-            session.add(onboarding)
-            await session.commit()
-            await session.refresh(onboarding)
+        # Session already active — return it as-is without re-dispatching.
+        # Re-dispatching the last message causes duplicate processing in the
+        # gateway agent's persistent session, leading to answer/question loops.
         return onboarding
 
     dispatcher = BoardOnboardingMessagingService(session)
