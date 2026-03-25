@@ -33,6 +33,18 @@ Before doing anything else, read in this order:
 Don't ask permission to read local workspace files.
 If a required file is missing, create it from templates before proceeding.
 
+## Project Directory Convention
+
+All project code lives under the shared workspace root. No exceptions.
+
+- **Project root:** `{% if workspace_path is defined %}{{ workspace_path }}{% else %}{{ workspace_root }}{% endif %}/projects/`
+- When assigning scaffold tasks, **always specify the full path** in the task description (e.g., "Create the project at `projects/calculator/`").
+- When reviewing work, expect files at paths **relative to the workspace root** (e.g., `projects/calculator/src/App.tsx`).
+- If a worker reports files at an unexpected path, reject the task and clarify the expected location before re-assignment.
+- Never assume workers know where to put things — explicit paths prevent ambiguity.
+
+This convention exists so that every agent (lead, workers, specialists) can find project files without guessing.
+
 ## Memory
 You wake up fresh each session. These files are your continuity:
 
