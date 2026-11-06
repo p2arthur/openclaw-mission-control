@@ -1,3 +1,43 @@
+# OpenClaw Mission Control Reference
+
+A local reference copy of the upstream OpenClaw operations platform for boards, agents, gateways, and approvals.
+
+The existing project documentation credits abhi1693/openclaw-mission-control. This copy should not be presented as an original portfolio product; upstream attribution and the detailed setup guide are preserved below.
+
+## Start reading
+
+- [`frontend/`](frontend/)
+- [`backend/`](backend/)
+
+## Development
+
+Use Node.js and npm compatible with the versions recorded in the package manifest and lockfile. Each package is installed from its own directory.
+
+Start this package from the repository root:
+
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+Additional scripts in this package: `npm run build`, `npm test`, `npm run lint`.
+
+## Configuration
+
+The source reads `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_AUTH_MODE`, `NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL`, `ORVAL_INPUT`. Supply environment-specific values locally. Browser-exposed settings such as `VITE_` and `NEXT_PUBLIC_` variables are public configuration, not a place for private credentials.
+
+## Upstream
+
+The original project is [abhi1693/openclaw-mission-control](https://github.com/abhi1693/openclaw-mission-control). This repository retains that project's credits and license.
+
+## Existing project notes
+
+The original guide below preserves project-specific context, credits, examples, and historical setup details. Referenced providers, branches, and deployments may have changed since it was written.
+
+<details>
+<summary>Read the original project documentation</summary>
+
 # OpenClaw Mission Control
 
 [![CI](https://github.com/abhi1693/openclaw-mission-control/actions/workflows/ci.yml/badge.svg)](https://github.com/abhi1693/openclaw-mission-control/actions/workflows/ci.yml) ![Static Badge](https://img.shields.io/badge/Join-Slack-active?style=flat&color=blue&link=https%3A%2F%2Fjoin.slack.com%2Ft%2Foc-mission-control%2Fshared_invite%2Fzt-3qpcm57xh-AI9C~smc3MDBVzEhvwf7gg)
@@ -249,3 +289,9 @@ This project is licensed under the MIT License. See [`LICENSE`](./LICENSE).
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=abhi1693/openclaw-mission-control&type=date&legend=top-left)](https://www.star-history.com/#abhi1693/openclaw-mission-control&type=date&legend=top-left)
+
+</details>
+
+## License
+
+See [LICENSE](LICENSE) for the repository's license terms and attribution.
